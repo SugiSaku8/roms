@@ -173,7 +173,7 @@ else
   export      MY_ROOT_DIR=${HOME}/ocean/repository/git
 fi
 
-export     MY_PROJECT_DIR=${PWD}
+#export     MY_PROJECT_DIR=${PWD}
 
 # The path to the user's local current ROMS source code.
 #
@@ -185,7 +185,7 @@ export     MY_PROJECT_DIR=${PWD}
 # This script allows for differing paths to the code and inputs on other
 # computers.
 
- export       MY_ROMS_SRC=${MY_ROOT_DIR}/roms
+ #export       MY_ROMS_SRC=${MY_ROOT_DIR}/roms
 
 # Set path of the directory containing makefile configuration (*.mk) files.
 # The user has the option to specify a customized version of these files
@@ -237,9 +237,8 @@ fi
 #export        USE_OpenMP=on            # shared-memory parallelism
 
 #export              FORT=ifx
- export              FORT=ifort
-#export              FORT=gfortran
-#export              FORT=pgi
+ #export             FORT=ifort
+export              FORT=gfortran
 
 if [ $g_flags -eq 1 ]; then
  export         USE_DEBUG=on            # use Fortran debugging flags
@@ -282,7 +281,15 @@ fi
 # component libraries and modules.
 #--------------------------------------------------------------------------
 
-source ${MY_ROMS_SRC}/ESM/esm_libs.sh ${MY_ROMS_SRC}/ESM/esm_libs.sh
+# Use local ESM directory if it exists
+if [ -f "${MY_ROMS_SRC}/ROMS/ESM/esm_libs.sh" ]; then
+  source ${MY_ROMS_SRC}/ROMS/ESM/esm_libs.sh
+else
+  # Fallback to the original path if local ESM directory doesn't exist
+  if [ -f "${MY_ROMS_SRC}/ESM/esm_libs.sh" ]; then
+    source ${MY_ROMS_SRC}/ESM/esm_libs.sh
+  fi
+fi
 
 #--------------------------------------------------------------------------
 # If applicable, use my specified library paths.
@@ -365,17 +372,11 @@ if [ $branch -eq 1 ]; then
 
   # Check out requested branch from ROMS GitHub.
 
-  if [ ! -d ${MY_PROJECT_DIR}/src ]; then
-    echo ""
-    echo "Downloading ROMS source code from GitHub: https://github.com/myroms"
-    echo ""
-    git clone https://www.github.com/myroms/roms.git src
-  fi
+  # Skip git operations since we're using local source
   echo ""
-  echo "Checking out ROMS GitHub branch: $branch_name"
+  echo "Using local ROMS source code from: ${MY_ROMS_SRC}"
   echo ""
-  cd src
-  git checkout $branch_name
+  cd ${MY_ROMS_SRC}
 
   # If we are using the COMPILERS from the ROMS source code
   # overide the value set above
