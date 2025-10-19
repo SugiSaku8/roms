@@ -339,6 +339,20 @@
           END IF
         END IF
         IF (exit_flag.eq.NoError) THEN
+          IF (ndefDIA(ng).gt.0) THEN
+            status=nf90_put_att(ncid,nf90_global, 'dia_base',           &
+     &                          TRIM(DIA(ng)%base))
+          ELSE
+            status=nf90_put_att(ncid, nf90_global, 'dia_file',          &
+     &                          TRIM(DIA(ng)%name))
+          END IF
+          IF (FoundError(status, nf90_noerr, 515, MyFile)) THEN
+            IF (Master) WRITE (stdout,20) 'dia_file', TRIM(ncname)
+            exit_flag=3
+            ioerror=status
+          END IF
+        END IF
+        IF (exit_flag.eq.NoError) THEN
           status=nf90_put_att(ncid, nf90_global, 'grd_file',            &
      &                        TRIM(GRD(ng)%name))
           IF (FoundError(status, nf90_noerr, 564, MyFile)) THEN
@@ -712,6 +726,26 @@
      &               1, (/0/), Aval, Vinfo, ncname,                     &
      &               SetParAccess = .FALSE.)
       IF (FoundError(exit_flag, NoError, 1349, MyFile)) RETURN
+      Vinfo( 1)='ntsDIA'
+      Vinfo( 2)=                                                        &
+     &   'starting time-step for accumulation of diagnostic fields'
+      status=def_var(ng, model, ncid, varid, nf90_int,                  &
+     &               1, (/0/), Aval, Vinfo, ncname,                     &
+     &               SetParAccess = .FALSE.)
+      IF (FoundError(exit_flag, NoError, 1468, MyFile)) RETURN
+      Vinfo( 1)='nDIA'
+      Vinfo( 2)='number of time-steps between diagnostic records'
+      status=def_var(ng, model, ncid, varid, nf90_int,                  &
+     &               1, (/0/), Aval, Vinfo, ncname,                     &
+     &               SetParAccess = .FALSE.)
+      IF (FoundError(exit_flag, NoError, 1475, MyFile)) RETURN
+      Vinfo( 1)='ndefDIA'
+      Vinfo( 2)=                                                        &
+     &   'number of time-steps between the creation of diagnostic files'
+      status=def_var(ng, model, ncid, varid, nf90_int,                  &
+     &               1, (/0/), Aval, Vinfo, ncname,                     &
+     &               SetParAccess = .FALSE.)
+      IF (FoundError(exit_flag, NoError, 1483, MyFile)) RETURN
 !
 !  Power-law shape filter parameters for time-averaging of barotropic
 !  fields.
@@ -786,22 +820,6 @@
      &               1, (/0/), Aval, Vinfo, ncname,                     &
      &               SetParAccess = .FALSE.)
       IF (FoundError(exit_flag, NoError, 1730, MyFile)) RETURN
-      Vinfo( 1)='Akk_bak'
-      Vinfo( 2)=                                                        &
-     &   'background vertical mixing coefficient for turbulent energy'
-      Vinfo( 3)='meter2 second-1'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1740, MyFile)) RETURN
-      Vinfo( 1)='Akp_bak'
-      Vinfo( 2)=                                                        &
-     &   'background vertical mixing coefficient for length scale'
-      Vinfo( 3)='meter2 second-1'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1749, MyFile)) RETURN
 !
 !  Drag coefficients.
 !
@@ -832,105 +850,6 @@
      &               1, (/0/), Aval, Vinfo, ncname,                     &
      &               SetParAccess = .FALSE.)
       IF (FoundError(exit_flag, NoError, 1830, MyFile)) RETURN
-!
-!  Generic length-scale parameters.
-!
-      Vinfo( 1)='gls_p'
-      Vinfo( 2)='stability exponent'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1841, MyFile)) RETURN
-      Vinfo( 1)='gls_m'
-      Vinfo( 2)='turbulent kinetic energy exponent'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1848, MyFile)) RETURN
-      Vinfo( 1)='gls_n'
-      Vinfo( 2)='turbulent length scale exponent'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1855, MyFile)) RETURN
-      Vinfo( 1)='gls_cmu0'
-      Vinfo( 2)='stability coefficient'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1862, MyFile)) RETURN
-      Vinfo( 1)='gls_c1'
-      Vinfo( 2)='shear production coefficient'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1869, MyFile)) RETURN
-      Vinfo( 1)='gls_c2'
-      Vinfo( 2)='dissipation coefficient'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1876, MyFile)) RETURN
-      Vinfo( 1)='gls_c3m'
-      Vinfo( 2)='buoyancy production coefficient (minus)'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1883, MyFile)) RETURN
-      Vinfo( 1)='gls_c3p'
-      Vinfo( 2)='buoyancy production coefficient (plus)'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1890, MyFile)) RETURN
-      Vinfo( 1)='gls_sigk'
-      Vinfo( 2)='constant Schmidt number for TKE'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1897, MyFile)) RETURN
-      Vinfo( 1)='gls_sigp'
-      Vinfo( 2)='constant Schmidt number for PSI'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1904, MyFile)) RETURN
-      Vinfo( 1)='gls_Kmin'
-      Vinfo( 2)='minimum value of specific turbulent kinetic energy'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1911, MyFile)) RETURN
-      Vinfo( 1)='gls_Pmin'
-      Vinfo( 2)='minimum Value of dissipation'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1918, MyFile)) RETURN
-      Vinfo( 1)='Charnok_alpha'
-      Vinfo( 2)='Charnock factor for surface roughness'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1925, MyFile)) RETURN
-      Vinfo( 1)='Zos_hsig_alpha'
-      Vinfo( 2)='wave amplitude factor for surface roughness'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1932, MyFile)) RETURN
-      Vinfo( 1)='sz_alpha'
-      Vinfo( 2)='surface flux from wave dissipation'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1939, MyFile)) RETURN
-      Vinfo( 1)='CrgBan_cw'
-      Vinfo( 2)='surface flux due to Craig and Banner wave breaking'
-      status=def_var(ng, model, ncid, varid, NF_TYPE,                   &
-     &               1, (/0/), Aval, Vinfo, ncname,                     &
-     &               SetParAccess = .FALSE.)
-      IF (FoundError(exit_flag, NoError, 1946, MyFile)) RETURN
 !
 !  Nudging inverse time scales used in various tasks.
 !

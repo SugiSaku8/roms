@@ -37,6 +37,7 @@
 !***********************************************************************
 !
       USE mod_param
+      USE mod_diags
       USE mod_forces
       USE mod_grid
       USE mod_mixing

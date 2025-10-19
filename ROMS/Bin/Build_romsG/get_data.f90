@@ -144,27 +144,6 @@
      &                FORCES(ng) % btfluxG(:,:,:,itemp))
       IF (FoundError(exit_flag, NoError, 629, MyFile)) RETURN
 !
-!  Surface net freshwater flux: E-P from NetCDF variable "swflux".
-!
-      IF (Lprocess) THEN
-        CALL get_2dfld (ng, iNLM, idsfwf, FRCncid(idsfwf,ng),           &
-     &                  nFfiles(ng), FRC(1,ng), update(1),              &
-     &                  LBi, UBi, LBj, UBj, 2, 1,                       &
-     &                  GRID(ng) % rmask,                               &
-     &                  FORCES(ng) % stfluxG(:,:,:,isalt))
-        IF (FoundError(exit_flag, NoError, 649, MyFile)) RETURN
-      END IF
-!
-!  Bottom net freshwater flux.
-!
-      CALL get_2dfld (ng, iNLM, idTbot(isalt),                          &
-     &                FRCncid(idTbot(isalt),ng),                        &
-     &                nFfiles(ng), FRC(1,ng), update(1),                &
-     &                LBi, UBi, LBj, UBj, 2, 1,                         &
-     &                GRID(ng) % rmask,                                 &
-     &                FORCES(ng) % btfluxG(:,:,:,isalt))
-      IF (FoundError(exit_flag, NoError, 703, MyFile)) RETURN
-!
 !=======================================================================
 !  Read in open boundary conditions from BOUNDARY NetCDF file.
 !=======================================================================

@@ -434,6 +434,30 @@
       integer :: MTC
 !
 !-----------------------------------------------------------------------
+!  Diagnostic fields parameters.
+!-----------------------------------------------------------------------
+!
+!  Number of diagnostic tracer fields.
+!
+      integer :: NDT
+!
+!  Number of diagnostic momentum fields.
+!
+      integer :: NDM2d                  ! 2D momentum
+      integer :: NDM3d                  ! 3D momentum
+!
+!  Number of diagnostic biology/bio-optical fields.  Currently, only
+!  available for the Fennel and EcoSim models.
+!
+      integer :: NDbio2d                ! 2D fields
+      integer :: NDbio3d                ! 3D fields
+      integer :: NDbio4d                ! 4D fields
+!
+!  Number of diagnostic 3D right-hand-side fields.
+!
+      integer :: NDrhs
+!
+!-----------------------------------------------------------------------
 !  Model state parameters.
 !-----------------------------------------------------------------------
 !
@@ -773,6 +797,11 @@
       END IF
 !
 !-----------------------------------------------------------------------
+!  Determine number of diagnostic variables.
+!-----------------------------------------------------------------------
+      NDT=0          ! No tracer diagnostics
+!
+!-----------------------------------------------------------------------
 !  Derived dimension parameters.
 !-----------------------------------------------------------------------
 !
@@ -787,7 +816,6 @@
 !  the "NSV" dimension.
 !
         NSV(ng)=5+NT(ng)         ! zeta, ubar, vbar, u, v, Tvar(1:MT)
-        NSV(ng)=NSV(ng)+1        ! TKE
         NSV(ng)=NSV(ng)+1        ! W
       END DO
 !
@@ -807,7 +835,6 @@
 !  associated with the state vector.
 !
       nLBCvar=5+MT                 ! zeta, ubar, vbar, u, v, Tvar(1:MT)
-      nLBCvar=nLBCvar+1            ! TKE
 !
       IF (.not.allocated(LBC)) THEN
         allocate ( LBC(4,nLBCvar,Ngrids) )

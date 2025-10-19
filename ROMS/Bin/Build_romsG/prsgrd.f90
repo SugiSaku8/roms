@@ -7,25 +7,20 @@
 !    See License_ROMS.md                            Hernan G. Arango   !
 !========================================== Alexander F. Shchepetkin ===
 !                                                                      !
-!  This subroutine evaluates the nonlinear  baroclinic,  hydrostatic   !
-!  pressure gradient term using a  nonconservative  Density-Jacobian   !
-!  scheme,  based on  cubic polynomial fits for  "rho" and  "z_r" as   !
-!  functions of nondimensional coordinates (XI,ETA,s), that is,  its   !
-!  respective array indices. The  cubic polynomials  are monotonized   !
-!  by using  harmonic mean instead of linear averages to interpolate   !
-!  slopes. This scheme retains exact anti-symmetry:                    !
+!  This subroutine evaluates the  baroclinic  hydrostatic  pressure    !
+!  gradient term using  the STANDARD density Jacobian  or  WEIGHTED    !
+!  density Jacobian scheme of Song (1998). Both of these approaches    !
+!  compute horizontal differences of density before of the vertical    !
+!  integration.                                                        !
 !                                                                      !
-!        J(rho,z_r)=-J(z_r,rho).                                       !
-!                                                                      !
-!  If parameter OneFifth (below) is set to zero,  the scheme becomes   !
-!  identical to standard Jacobian.                                     !
+!  The pressure gradient terms (m4/s2) are loaded into right-hand-     !
+!  side arrays "ru" and "rv".                                          !
 !                                                                      !
 !  Reference:                                                          !
 !                                                                      !
-!    Shchepetkin A.F and J.C. McWilliams, 2003:  A method for          !
-!      computing horizontal pressure gradient force in an ocean        !
-!      model with non-aligned vertical coordinate, JGR, 108,           !
-!      1-34.                                                           !
+!    Song, Y.T., 1998:  A general pressure gradient formulation for    !
+!      numerical ocean models. Part I: Scheme design and diagnostic    !
+!      analysis, Monthly Weather Rev., 126, 3213-3230.                 !
 !                                                                      !
 !=======================================================================
 !
@@ -41,6 +36,7 @@
 !***********************************************************************
 !
       USE mod_param
+      USE mod_diags
       USE mod_grid
       USE mod_ocean
       USE mod_stepping
@@ -52,7 +48,7 @@
 !  Local variable declarations.
 !
       character (len=*), parameter :: MyFile =                          &
-     &  "ROMS/Nonlinear/prsgrd32.h"
+     &  "ROMS/Nonlinear/prsgrd31.h"
 !
       integer :: IminS, ImaxS, JminS, JmaxS
       integer :: LBi, UBi, LBj, UBj, LBij, UBij
@@ -78,34 +74,30 @@
       LBij=BOUNDS(ng)%LBij
       UBij=BOUNDS(ng)%UBij
 !
-      CALL wclock_on (ng, iNLM, 23, 66, MyFile)
-      CALL prsgrd32_tile (ng, tile,                                     &
+      CALL wclock_on (ng, iNLM, 23, 61, MyFile)
+      CALL prsgrd31_tile (ng, tile,                                     &
      &                    LBi, UBi, LBj, UBj,                           &
      &                    IminS, ImaxS, JminS, JmaxS,                   &
      &                    nrhs(ng),                                     &
-     &                    GRID(ng) % umask,                             &
-     &                    GRID(ng) % vmask,                             &
+     &                    GRID(ng) % Hz,                                &
      &                    GRID(ng) % om_v,                              &
      &                    GRID(ng) % on_u,                              &
-     &                    GRID(ng) % Hz,                                &
      &                    GRID(ng) % z_r,                               &
      &                    GRID(ng) % z_w,                               &
      &                    OCEAN(ng) % rho,                              &
      &                    OCEAN(ng) % ru,                               &
      &                    OCEAN(ng) % rv)
-      CALL wclock_off (ng, iNLM, 23, 102, MyFile)
+      CALL wclock_off (ng, iNLM, 23, 93, MyFile)
 !
       RETURN
       END SUBROUTINE prsgrd
 !
 !***********************************************************************
-      SUBROUTINE prsgrd32_tile (ng, tile,                               &
+      SUBROUTINE prsgrd31_tile (ng, tile,                               &
      &                          LBi, UBi, LBj, UBj,                     &
      &                          IminS, ImaxS, JminS, JmaxS,             &
      &                          nrhs,                                   &
-     &                          umask, vmask,                           &
-     &                          om_v, on_u,                             &
-     &                          Hz, z_r, z_w,                           &
+     &                          Hz, om_v, on_u, z_r, z_w,               &
      &                          rho,                                    &
      &                          ru, rv)
 !***********************************************************************
@@ -119,11 +111,9 @@
       integer, intent(in) :: LBi, UBi, LBj, UBj
       integer, intent(in) :: IminS, ImaxS, JminS, JmaxS
       integer, intent(in) :: nrhs
-      real(r8), intent(in) :: umask(LBi:,LBj:)
-      real(r8), intent(in) :: vmask(LBi:,LBj:)
+      real(r8), intent(in) :: Hz(LBi:,LBj:,:)
       real(r8), intent(in) :: om_v(LBi:,LBj:)
       real(r8), intent(in) :: on_u(LBi:,LBj:)
-      real(r8), intent(in) :: Hz(LBi:,LBj:,:)
       real(r8), intent(in) :: z_r(LBi:,LBj:,:)
       real(r8), intent(in) :: z_w(LBi:,LBj:,0:)
       real(r8), intent(in) :: rho(LBi:,LBj:,:)
@@ -133,19 +123,10 @@
 !  Local variable declarations.
 !
       integer :: i, j, k
-      real(r8), parameter :: OneFifth = 0.2_r8
-      real(r8), parameter :: OneTwelfth = 1.0_r8/12.0_r8
-      real(r8), parameter :: eps = 1.0E-10_r8
-      real(r8) :: GRho, GRho0,  HalfGRho
-      real(r8) :: cff, cff1, cff2
-      real(r8), dimension(IminS:ImaxS,JminS:JmaxS,N(ng)) :: P
-      real(r8), dimension(IminS:ImaxS,0:N(ng)) :: dR
-      real(r8), dimension(IminS:ImaxS,0:N(ng)) :: dZ
-      real(r8), dimension(IminS:ImaxS,JminS:JmaxS) :: FC
-      real(r8), dimension(IminS:ImaxS,JminS:JmaxS) :: aux
-      real(r8), dimension(IminS:ImaxS,JminS:JmaxS) :: dRx
-      real(r8), dimension(IminS:ImaxS,JminS:JmaxS) :: dZx
-!
+      real(r8) :: fac, fac1, fac2, fac3
+      real(r8) :: cff1, cff2, cff3, cff4
+      real(r8), dimension(IminS:ImaxS) :: phie
+      real(r8), dimension(IminS:ImaxS) :: phix
 !
 !-----------------------------------------------------------------------
 !  Set lower and upper tile bounds and staggered variables bounds for
@@ -207,173 +188,86 @@
       Jendp3 =BOUNDS(ng) % Jendp3 (tile)            ! Jend+3
 !
 !-----------------------------------------------------------------------
-!  Preliminary step (same for XI- and ETA-components):
+!  Calculate pressure gradient in the XI-direction (m4/s2).
 !-----------------------------------------------------------------------
 !
-      GRho=g/rho0
-      GRho0=1000.0_r8*GRho
-      HalfGRho=0.5_r8*GRho
+!  Compute surface baroclinic pressure gradient.
 !
-!  Compute kinematic pressure: P/rho0 (m2/s2).
+      fac1=0.5_r8*g/rho0
+      fac2=1000.0_r8*g/rho0
+      fac3=0.25_r8*g/rho0
+      DO j=Jstr,Jend
+        DO i=IstrU,Iend
+          cff1=z_w(i  ,j,N(ng))-z_r(i  ,j,N(ng))+                       &
+     &         z_w(i-1,j,N(ng))-z_r(i-1,j,N(ng))
+          phix(i)=fac1*(rho(i,j,N(ng))-rho(i-1,j,N(ng)))*cff1
+          phix(i)=phix(i)+                                              &
+     &            (fac2+fac1*(rho(i,j,N(ng))+rho(i-1,j,N(ng))))*        &
+     &            (z_w(i,j,N(ng))-z_w(i-1,j,N(ng)))
+          ru(i,j,N(ng),nrhs)=-0.5_r8*(Hz(i,j,N(ng))+Hz(i-1,j,N(ng)))*   &
+     &                       phix(i)*on_u(i,j)
+        END DO
 !
-      DO j=JstrV-1,Jend
-        DO k=1,N(ng)-1
-          DO i=IstrU-1,Iend
-            dR(i,k)=rho(i,j,k+1)-rho(i,j,k)
-            dZ(i,k)=z_r(i,j,k+1)-z_r(i,j,k)
-          END DO
-        END DO
-        DO i=IstrU-1,Iend
-          dR(i,N(ng))=dR(i,N(ng)-1)
-          dZ(i,N(ng))=dZ(i,N(ng)-1)
-          dR(i,0)=dR(i,1)
-          dZ(i,0)=dZ(i,1)
-        END DO
-        DO k=N(ng),1,-1
-          DO i=IstrU-1,Iend
-            cff=2.0_r8*dR(i,k)*dR(i,k-1)
-            IF (cff.gt.eps) THEN
-              dR(i,k)=cff/(dR(i,k)+dR(i,k-1))
-            ELSE
-              dR(i,k)=0.0_r8
-            END IF
-            dZ(i,k)=2.0_r8*dZ(i,k)*dZ(i,k-1)/(dZ(i,k)+dZ(i,k-1))
-          END DO
-        END DO
-        DO i=IstrU-1,Iend
-          cff1=1.0_r8/(z_r(i,j,N(ng))-z_r(i,j,N(ng)-1))
-          cff2=0.5_r8*(rho(i,j,N(ng))-rho(i,j,N(ng)-1))*                &
-     &         (z_w(i,j,N(ng))-z_r(i,j,N(ng)))*cff1
-          P(i,j,N(ng))=g*z_w(i,j,N(ng))+                                &
-     &                 GRho*(rho(i,j,N(ng))+cff2)*                      &
-     &                 (z_w(i,j,N(ng))-z_r(i,j,N(ng)))
-        END DO
+!  Compute interior baroclinic pressure gradient.  Differentiate and
+!  then vertically integrate.
+!
         DO k=N(ng)-1,1,-1
-          DO i=IstrU-1,Iend
-            P(i,j,k)=P(i,j,k+1)+                                        &
-     &               HalfGRho*((rho(i,j,k+1)+rho(i,j,k))*               &
-     &                         (z_r(i,j,k+1)-z_r(i,j,k))-               &
-     &                         OneFifth*                                &
-     &                         ((dR(i,k+1)-dR(i,k))*                    &
-     &                          (z_r(i,j,k+1)-z_r(i,j,k)-               &
-     &                           OneTwelfth*                            &
-     &                           (dZ(i,k+1)+dZ(i,k)))-                  &
-     &                          (dZ(i,k+1)-dZ(i,k))*                    &
-     &                          (rho(i,j,k+1)-rho(i,j,k)-               &
-     &                           OneTwelfth*                            &
-     &                           (dR(i,k+1)+dR(i,k)))))
-          END DO
-        END DO
-      END DO
-!
-!-----------------------------------------------------------------------
-!  Compute XI-component pressure gradient term.
-!-----------------------------------------------------------------------
-!
-      DO k=N(ng),1,-1
-        DO j=Jstr,Jend
-          DO i=IstrU-1,Iend+1
-            aux(i,j)=z_r(i,j,k)-z_r(i-1,j,k)
-            aux(i,j)=aux(i,j)*umask(i,j)
-            FC(i,j)=rho(i,j,k)-rho(i-1,j,k)
-            FC(i,j)=FC(i,j)*umask(i,j)
-          END DO
-        END DO
-!
-        DO j=Jstr,Jend
-          DO i=IstrU-1,Iend
-            cff=2.0_r8*aux(i,j)*aux(i+1,j)
-            IF (cff.gt.eps) THEN
-              cff1=1.0_r8/(aux(i,j)+aux(i+1,j))
-              dZx(i,j)=cff*cff1
-            ELSE
-              dZx(i,j)=0.0_r8
-            END IF
-            cff1=2.0_r8*FC(i,j)*FC(i+1,j)
-            IF (cff1.gt.eps) THEN
-              cff2=1.0_r8/(FC(i,j)+FC(i+1,j))
-              dRx(i,j)=cff1*cff2
-            ELSE
-              dRx(i,j)=0.0_r8
-            END IF
-          END DO
-        END DO
-!
-        DO j=Jstr,Jend
           DO i=IstrU,Iend
-            ru(i,j,k,nrhs)=on_u(i,j)*0.5_r8*                            &
-     &                     (Hz(i,j,k)+Hz(i-1,j,k))*                     &
-     &                     (P(i-1,j,k)-P(i,j,k)-                        &
-     &                      HalfGRho*                                   &
-     &                      ((rho(i,j,k)+rho(i-1,j,k))*                 &
-     &                       (z_r(i,j,k)-z_r(i-1,j,k))-                 &
-     &                        OneFifth*                                 &
-     &                        ((dRx(i,j)-dRx(i-1,j))*                   &
-     &                         (z_r(i,j,k)-z_r(i-1,j,k)-                &
-     &                          OneTwelfth*                             &
-     &                          (dZx(i,j)+dZx(i-1,j)))-                 &
-     &                         (dZx(i,j)-dZx(i-1,j))*                   &
-     &                         (rho(i,j,k)-rho(i-1,j,k)-                &
-     &                          OneTwelfth*                             &
-     &                          (dRx(i,j)+dRx(i-1,j))))))
+            cff1=rho(i,j,k+1)-rho(i-1,j,k+1)+                           &
+     &           rho(i,j,k  )-rho(i-1,j,k  )
+            cff2=rho(i,j,k+1)+rho(i-1,j,k+1)-                           &
+     &           rho(i,j,k  )-rho(i-1,j,k  )
+            cff3=z_r(i,j,k+1)+z_r(i-1,j,k+1)-                           &
+     &           z_r(i,j,k  )-z_r(i-1,j,k  )
+            cff4=z_r(i,j,k+1)-z_r(i-1,j,k+1)+                           &
+     &           z_r(i,j,k  )-z_r(i-1,j,k  )
+            phix(i)=phix(i)+                                            &
+     &              fac3*(cff1*cff3-cff2*cff4)
+            ru(i,j,k,nrhs)=-0.5_r8*(Hz(i,j,k)+Hz(i-1,j,k))*             &
+     &                     phix(i)*on_u(i,j)
           END DO
         END DO
-      END DO
 !
 !-----------------------------------------------------------------------
-!  ETA-component pressure gradient term.
+!  Calculate pressure gradient in the ETA-direction (m4/s2).
 !-----------------------------------------------------------------------
 !
-      DO k=N(ng),1,-1
-        DO j=JstrV-1,Jend+1
-          DO i=Istr,Iend
-            aux(i,j)=z_r(i,j,k)-z_r(i,j-1,k)
-            aux(i,j)=aux(i,j)*vmask(i,j)
-            FC(i,j)=rho(i,j,k)-rho(i,j-1,k)
-            FC(i,j)=FC(i,j)*vmask(i,j)
-          END DO
-        END DO
+!  Compute surface baroclinic pressure gradient.
 !
-        DO j=JstrV-1,Jend
+        IF (j.ge.JstrV) THEN
           DO i=Istr,Iend
-            cff=2.0_r8*aux(i,j)*aux(i,j+1)
-            IF (cff.gt.eps) THEN
-              cff1=1.0_r8/(aux(i,j)+aux(i,j+1))
-              dZx(i,j)=cff*cff1
-            ELSE
-              dZx(i,j)=0.0_r8
-            END IF
-            cff1=2.0_r8*FC(i,j)*FC(i,j+1)
-            IF (cff1.gt.eps) THEN
-              cff2=1.0_r8/(FC(i,j)+FC(i,j+1))
-              dRx(i,j)=cff1*cff2
-            ELSE
-              dRx(i,j)=0.0_r8
-            END IF
+            cff1=z_w(i,j  ,N(ng))-z_r(i,j  ,N(ng))+                     &
+     &           z_w(i,j-1,N(ng))-z_r(i,j-1,N(ng))
+            phie(i)=fac1*(rho(i,j,N(ng))-rho(i,j-1,N(ng)))*cff1
+            phie(i)=phie(i)+                                            &
+     &              (fac2+fac1*(rho(i,j,N(ng))+rho(i,j-1,N(ng))))*      &
+     &              (z_w(i,j,N(ng))-z_w(i,j-1,N(ng)))
+            rv(i,j,N(ng),nrhs)=-0.5_r8*(Hz(i,j,N(ng))+Hz(i,j-1,N(ng)))* &
+     &                         phie(i)*om_v(i,j)
           END DO
-        END DO
 !
-        DO j=JstrV,Jend
-          DO i=Istr,Iend
-            rv(i,j,k,nrhs)=om_v(i,j)*0.5_r8*                            &
-     &                     (Hz(i,j,k)+Hz(i,j-1,k))*                     &
-     &                     (P(i,j-1,k)-P(i,j,k)-                        &
-     &                      HalfGRho*                                   &
-     &                      ((rho(i,j,k)+rho(i,j-1,k))*                 &
-     &                       (z_r(i,j,k)-z_r(i,j-1,k))-                 &
-     &                        OneFifth*                                 &
-     &                        ((dRx(i,j)-dRx(i,j-1))*                   &
-     &                         (z_r(i,j,k)-z_r(i,j-1,k)-                &
-     &                          OneTwelfth*                             &
-     &                          (dZx(i,j)+dZx(i,j-1)))-                 &
-     &                         (dZx(i,j)-dZx(i,j-1))*                   &
-     &                         (rho(i,j,k)-rho(i,j-1,k)-                &
-     &                          OneTwelfth*                             &
-     &                          (dRx(i,j)+dRx(i,j-1))))))
+!  Compute interior baroclinic pressure gradient.  Differentiate and
+!  then vertically integrate.
+!
+          DO k=N(ng)-1,1,-1
+            DO i=Istr,Iend
+              cff1=rho(i,j,k+1)-rho(i,j-1,k+1)+                         &
+     &             rho(i,j,k  )-rho(i,j-1,k  )
+              cff2=rho(i,j,k+1)+rho(i,j-1,k+1)-                         &
+     &             rho(i,j,k  )-rho(i,j-1,k  )
+              cff3=z_r(i,j,k+1)+z_r(i,j-1,k+1)-                         &
+     &             z_r(i,j,k  )-z_r(i,j-1,k  )
+              cff4=z_r(i,j,k+1)-z_r(i,j-1,k+1)+                         &
+     &             z_r(i,j,k  )-z_r(i,j-1,k  )
+              phie(i)=phie(i)+                                          &
+     &                fac3*(cff1*cff3-cff2*cff4)
+              rv(i,j,k,nrhs)=-0.5_r8*(Hz(i,j,k)+Hz(i,j-1,k))*           &
+     &                       phie(i)*om_v(i,j)
+            END DO
           END DO
-        END DO
+        END IF
       END DO
 !
       RETURN
-      END SUBROUTINE prsgrd32_tile
+      END SUBROUTINE prsgrd31_tile
       END MODULE prsgrd_mod

@@ -75,6 +75,10 @@
      &                     GRID(ng) % rmask_avg,                        &
      &                     GRID(ng) % umask_avg,                        &
      &                     GRID(ng) % vmask_avg,                        &
+     &                     GRID(ng) % pmask_dia,                        &
+     &                     GRID(ng) % rmask_dia,                        &
+     &                     GRID(ng) % umask_dia,                        &
+     &                     GRID(ng) % vmask_dia,                        &
      &                     GRID(ng) % pmask_full,                       &
      &                     GRID(ng) % rmask_full,                       &
      &                     GRID(ng) % umask_full,                       &
@@ -92,6 +96,8 @@
      &                           umask, vmask,                          &
      &                           pmask_avg, rmask_avg,                  &
      &                           umask_avg, vmask_avg,                  &
+     &                           pmask_dia, rmask_dia,                  &
+     &                           umask_dia, vmask_dia,                  &
      &                           pmask_full, rmask_full,                &
      &                           umask_full, vmask_full)
 !***********************************************************************
@@ -117,6 +123,10 @@
       real(r8), intent(inout) :: rmask_avg(LBi:,LBj:)
       real(r8), intent(inout) :: umask_avg(LBi:,LBj:)
       real(r8), intent(inout) :: vmask_avg(LBi:,LBj:)
+      real(r8), intent(inout) :: pmask_dia(LBi:,LBj:)
+      real(r8), intent(inout) :: rmask_dia(LBi:,LBj:)
+      real(r8), intent(inout) :: umask_dia(LBi:,LBj:)
+      real(r8), intent(inout) :: vmask_dia(LBi:,LBj:)
       real(r8), intent(inout) :: pmask_full(LBi:,LBj:)
       real(r8), intent(inout) :: rmask_full(LBi:,LBj:)
       real(r8), intent(inout) :: umask_full(LBi:,LBj:)
@@ -296,6 +306,51 @@
      &                    NghostPoints,                                 &
      &                    EWperiodic(ng), NSperiodic(ng),               &
      &                    pmask_avg, rmask_avg, umask_avg, vmask_avg)
+!
+!-----------------------------------------------------------------------
+!  Initialize diagnostic file Land/Sea masks for time-averaged fields.
+!-----------------------------------------------------------------------
+!
+      DO j=JstrP,JendP
+        DO i=IstrP,IendP
+          pmask_dia(i,j)=pmask_full(i,j)
+        END DO
+      END DO
+      DO j=JstrT,JendT
+        DO i=IstrT,IendT
+          rmask_dia(i,j)=rmask_full(i,j)
+        END DO
+      END DO
+      DO j=JstrT,JendT
+        DO i=IstrP,IendT
+          umask_dia(i,j)=umask_full(i,j)
+        END DO
+      END DO
+      DO j=JstrP,JendT
+        DO i=IstrT,IendT
+          vmask_dia(i,j)=vmask_full(i,j)
+        END DO
+      END DO
+!
+      IF (EWperiodic(ng).or.NSperiodic(ng)) THEN
+        CALL exchange_p2d_tile (ng, tile,                               &
+     &                          LBi, UBi, LBj, UBj,                     &
+     &                          pmask_dia)
+        CALL exchange_r2d_tile (ng, tile,                               &
+     &                          LBi, UBi, LBj, UBj,                     &
+     &                          rmask_dia)
+        CALL exchange_u2d_tile (ng, tile,                               &
+     &                          LBi, UBi, LBj, UBj,                     &
+     &                          umask_dia)
+        CALL exchange_v2d_tile (ng, tile,                               &
+     &                          LBi, UBi, LBj, UBj,                     &
+     &                          vmask_dia)
+      END IF
+      CALL mp_exchange2d (ng, tile, model, 4,                           &
+     &                    LBi, UBi, LBj, UBj,                           &
+     &                    NghostPoints,                                 &
+     &                    EWperiodic(ng), NSperiodic(ng),               &
+     &                    pmask_dia, rmask_dia, umask_dia, vmask_dia)
       RETURN
       END SUBROUTINE set_masks_tile
       END MODULE set_masks_mod

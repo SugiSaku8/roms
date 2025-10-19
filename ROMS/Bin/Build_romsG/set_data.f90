@@ -232,24 +232,6 @@
      &                     update)
       IF (FoundError(exit_flag, NoError, 462, MyFile)) RETURN
 !
-!  Surface freshwater (E-P) flux (m/s) from NetCDF variable "swflux".
-!
-      CALL set_2dfld_tile (ng, tile, iNLM, idsfwf,                      &
-     &                     LBi, UBi, LBj, UBj,                          &
-     &                     FORCES(ng)%stfluxG(:,:,:,isalt),             &
-     &                     FORCES(ng)%stflux (:,:,isalt),               &
-     &                     update)
-      IF (FoundError(exit_flag, NoError, 483, MyFile)) RETURN
-!
-!  Set kinematic bottom salt flux (m/s).
-!
-      CALL set_2dfld_tile (ng, tile, iNLM, idTbot(isalt),               &
-     &                     LBi, UBi, LBj, UBj,                          &
-     &                     FORCES(ng)%btfluxG(:,:,:,isalt),             &
-     &                     FORCES(ng)%btflux (:,:,isalt),               &
-     &                     update)
-      IF (FoundError(exit_flag, NoError, 526, MyFile)) RETURN
-!
 !  Set kinematic surface momentum flux (m2/s2).
 !
       CALL set_2dfld_tile (ng, tile, iNLM, idUsms,                      &

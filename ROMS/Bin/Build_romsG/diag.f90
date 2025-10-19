@@ -290,10 +290,14 @@
         END DO
         DO j=Jstr,Jend
           DO i=Istr,Iend
-            pe2d(i,Jend+1)=pe2d(i,Jend+1)+                              &
-     &                     omn(i,j)*(z_w(i,j,N(ng))-z_w(i,j,0))
-            pe2d(i,Jstr-1)=pe2d(i,Jstr-1)+omn(i,j)*pe2d(i,j)
-            ke2d(i,Jstr-1)=ke2d(i,Jstr-1)+omn(i,j)*ke2d(i,j)
+            cff=omn(i,j)*(z_w(i,j,N(ng))-z_w(i,j,0))
+            IF (cff.eq.cff) THEN
+              pe2d(i,Jend+1)=pe2d(i,Jend+1)+cff
+            END IF
+            cff=omn(i,j)*pe2d(i,j)
+            IF (cff.eq.cff) pe2d(i,Jstr-1)=pe2d(i,Jstr-1)+cff
+            cff=omn(i,j)*ke2d(i,j)
+            IF (cff.eq.cff) ke2d(i,Jstr-1)=ke2d(i,Jstr-1)+cff
           END DO
         END DO
         my_volume=0.0_r8
@@ -368,6 +372,10 @@
           max_Ck=INT(Courant(7))
 !
           trd=MyMaster
+          IF ((volume.ne.volume).or.(volume.le.0.0_r8)) THEN
+            ! Avoid division by zero/NaN during early debugging
+            volume=1.0_r8
+          END IF
           avgke=avgke/volume
           avgpe=avgpe/volume
           avgkp=avgke+avgpe

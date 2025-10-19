@@ -31,9 +31,6 @@
 !  avgrho     Density anomaly (kg/m3).                                 !
 !  avgt       Tracer type variables (usually, potential temperature    !
 !               and salinity).                                         !
-!  avgAKt     Vertical diffusion of temperature (m2/s).                !
-!  avgAKv     Vertical viscosity (m2/s).                               !
-!  avgAKs     Vertical diffusion of Salinity (m2/s).                   !
 !                                                                      !
 !  Time-averaged surface and bottom fluxes.                            !
 !                                                                      !
@@ -100,9 +97,6 @@
           real(r8), pointer :: avgwvel(:,:,:)
           real(r8), pointer :: avgrho(:,:,:)
           real(r8), pointer :: avgt(:,:,:,:)
-          real(r8), pointer :: avgAKv(:,:,:)
-          real(r8), pointer :: avgAKt(:,:,:)
-          real(r8), pointer :: avgAKs(:,:,:)
 !
 !  Time-averaged surface and bottom fluxes.
 !
@@ -226,18 +220,6 @@
         allocate ( AVERAGE(ng) % avgt(LBi:UBi,LBj:UBj,N(ng),NT(ng)) )
         Dmem(ng)=Dmem(ng)+REAL(N(ng)*NT(ng),r8)*size2d
       END IF
-      IF (Aout(idVvis,ng)) THEN
-        allocate ( AVERAGE(ng) % avgAKv(LBi:UBi,LBj:UBj,0:N(ng)) )
-        Dmem(ng)=Dmem(ng)+REAL(N(ng)+1,r8)*size2d
-      END IF
-      IF (Aout(idTdif,ng)) THEN
-        allocate ( AVERAGE(ng) % avgAKt(LBi:UBi,LBj:UBj,0:N(ng)) )
-        Dmem(ng)=Dmem(ng)+REAL(N(ng)+1,r8)*size2d
-      END IF
-      IF (Aout(idSdif,ng)) THEN
-        allocate ( AVERAGE(ng) % avgAKs(LBi:UBi,LBj:UBj,0:N(ng)) )
-        Dmem(ng)=Dmem(ng)+REAL(N(ng)+1,r8)*size2d
-      END IF
 !
 !  Time-averaged surface and bottom fluxes.
 !
@@ -259,10 +241,6 @@
       END IF
       IF (Aout(idTsur(itemp),ng)) THEN
         allocate ( AVERAGE(ng) % avgstf(LBi:UBi,LBj:UBj) )
-        Dmem(ng)=Dmem(ng)+size2d
-      END IF
-      IF (Aout(idTsur(isalt),ng)) THEN
-        allocate ( AVERAGE(ng) % avgswf(LBi:UBi,LBj:UBj) )
         Dmem(ng)=Dmem(ng)+size2d
       END IF
 !
@@ -584,33 +562,6 @@
           END DO
         END DO
       END IF
-      IF (Aout(idVvis,ng)) THEN
-        DO k=0,N(ng)
-          DO j=Jmin,Jmax
-            DO i=Imin,Imax
-              AVERAGE(ng) % avgAKv(i,j,k) = IniVal
-            END DO
-          END DO
-        END DO
-      END IF
-      IF (Aout(idTdif,ng)) THEN
-        DO k=0,N(ng)
-          DO j=Jmin,Jmax
-            DO i=Imin,Imax
-              AVERAGE(ng) % avgAKt(i,j,k) = IniVal
-            END DO
-          END DO
-        END DO
-      END IF
-      IF (Aout(idSdif,ng)) THEN
-        DO k=0,N(ng)
-          DO j=Jmin,Jmax
-            DO i=Imin,Imax
-              AVERAGE(ng) % avgAKs(i,j,k) = IniVal
-            END DO
-          END DO
-        END DO
-      END IF
 !
 !  Time-averaged surface and bottom fluxes.
 !
@@ -646,13 +597,6 @@
         DO j=Jmin,Jmax
           DO i=Imin,Imax
             AVERAGE(ng) % avgstf(i,j) = IniVal
-          END DO
-        END DO
-      END IF
-      IF (Aout(idTsur(isalt),ng)) THEN
-        DO j=Jmin,Jmax
-          DO i=Imin,Imax
-            AVERAGE(ng) % avgswf(i,j) = IniVal
           END DO
         END DO
       END IF

@@ -338,33 +338,6 @@
             END DO
           END IF
         END DO
-        IF (Aout(idVvis,ng)) THEN
-          DO k=0,N(ng)
-            DO j=JstrR,JendR
-              DO i=IstrR,IendR
-                AVERAGE(ng)%avgAKv(i,j,k)=MIXING(ng)%Akv(i,j,k)
-              END DO
-            END DO
-          END DO
-        END IF
-        IF (Aout(idTdif,ng)) THEN
-          DO k=0,N(ng)
-            DO j=JstrR,JendR
-              DO i=IstrR,IendR
-                AVERAGE(ng)%avgAKt(i,j,k)=MIXING(ng)%Akt(i,j,k,itemp)
-              END DO
-            END DO
-          END DO
-        END IF
-        IF (Aout(idSdif,ng)) THEN
-          DO k=0,N(ng)
-            DO j=JstrR,JendR
-              DO i=IstrR,IendR
-                AVERAGE(ng)%avgAKs(i,j,k)=MIXING(ng)%Akt(i,j,k,isalt)
-              END DO
-            END DO
-          END DO
-        END IF
 !
 !  Initialize surface and bottom fluxes.
 !
@@ -400,13 +373,6 @@
           DO j=JstrR,JendR
             DO i=IstrR,IendR
               AVERAGE(ng)%avgstf(i,j)=FORCES(ng)%stflx(i,j,itemp)
-            END DO
-          END DO
-        END IF
-        IF (Aout(idTsur(isalt),ng)) THEN
-          DO j=JstrR,JendR
-            DO i=IstrR,IendR
-              AVERAGE(ng)%avgswf(i,j)=FORCES(ng)%stflx(i,j,isalt)
             END DO
           END DO
         END IF
@@ -721,36 +687,6 @@
             END DO
           END IF
         END DO
-        IF (Aout(idVvis,ng)) THEN
-          DO k=0,N(ng)
-            DO j=JstrR,JendR
-              DO i=IstrR,IendR
-                AVERAGE(ng)%avgAKv(i,j,k)=AVERAGE(ng)%avgAKv(i,j,k)+    &
-     &                                    MIXING(ng)%Akv(i,j,k)
-              END DO
-            END DO
-          END DO
-        END IF
-        IF (Aout(idTdif,ng)) THEN
-          DO k=0,N(ng)
-            DO j=JstrR,JendR
-              DO i=IstrR,IendR
-                AVERAGE(ng)%avgAKt(i,j,k)=AVERAGE(ng)%avgAKt(i,j,k)+    &
-     &                                    MIXING(ng)%Akt(i,j,k,itemp)
-              END DO
-            END DO
-          END DO
-        END IF
-        IF (Aout(idSdif,ng)) THEN
-          DO k=0,N(ng)
-            DO j=JstrR,JendR
-              DO i=IstrR,IendR
-                AVERAGE(ng)%avgAKs(i,j,k)=AVERAGE(ng)%avgAKs(i,j,k)+    &
-     &                                    MIXING(ng)%Akt(i,j,k,isalt)
-              END DO
-            END DO
-          END DO
-        END IF
 !
 !  Accumulate surface and bottom fluxes.
 !
@@ -791,14 +727,6 @@
             DO i=IstrR,IendR
               AVERAGE(ng)%avgstf(i,j)=AVERAGE(ng)%avgstf(i,j)+          &
      &                                FORCES(ng)%stflx(i,j,itemp)
-            END DO
-          END DO
-        END IF
-        IF (Aout(idTsur(isalt),ng)) THEN
-          DO j=JstrR,JendR
-            DO i=IstrR,IendR
-              AVERAGE(ng)%avgswf(i,j)=AVERAGE(ng)%avgswf(i,j)+          &
-     &                                FORCES(ng)%stflx(i,j,isalt)
             END DO
           END DO
         END IF
@@ -1284,66 +1212,6 @@
             END IF
           END IF
         END DO
-        IF (Aout(idVvis,ng)) THEN
-          DO k=0,N(ng)
-            DO j=JstrR,JendR
-              DO i=IstrR,IendR
-                AVERAGE(ng)%avgAKv(i,j,k)=rfac(i,j)*                    &
-     &                                    AVERAGE(ng)%avgAKv(i,j,k)
-              END DO
-            END DO
-          END DO
-          IF (EWperiodic(ng).or.NSperiodic(ng)) THEN
-            CALL exchange_w3d_tile (ng, tile,                           &
-     &                              LBi, UBi, LBj, UBj, 0, N(ng),       &
-     &                              AVERAGE(ng)%avgAKv)
-            CALL mp_exchange3d (ng, tile, model, 1,                     &
-     &                          LBi, UBi, LBj, UBj, 0, N(ng),           &
-     &                          NghostPoints,                           &
-     &                          EWperiodic(ng), NSperiodic(ng),         &
-     &                          AVERAGE(ng)%avgAKv)
-          END IF
-        END IF
-        IF (Aout(idTdif,ng)) THEN
-          DO k=0,N(ng)
-            DO j=JstrR,JendR
-              DO i=IstrR,IendR
-                AVERAGE(ng)%avgAKt(i,j,k)=rfac(i,j)*                    &
-     &                                    AVERAGE(ng)%avgAKt(i,j,k)
-              END DO
-            END DO
-          END DO
-          IF (EWperiodic(ng).or.NSperiodic(ng)) THEN
-            CALL exchange_w3d_tile (ng, tile,                           &
-     &                              LBi, UBi, LBj, UBj, 0, N(ng),       &
-     &                              AVERAGE(ng)%avgAKt)
-            CALL mp_exchange3d (ng, tile, model, 1,                     &
-     &                          LBi, UBi, LBj, UBj, 0, N(ng),           &
-     &                          NghostPoints,                           &
-     &                          EWperiodic(ng), NSperiodic(ng),         &
-     &                          AVERAGE(ng)%avgAKt)
-          END IF
-        END IF
-        IF (Aout(idSdif,ng)) THEN
-          DO k=0,N(ng)
-            DO j=JstrR,JendR
-              DO i=IstrR,IendR
-                AVERAGE(ng)%avgAKs(i,j,k)=rfac(i,j)*                    &
-     &                                    AVERAGE(ng)%avgAKs(i,j,k)
-              END DO
-            END DO
-          END DO
-          IF (EWperiodic(ng).or.NSperiodic(ng)) THEN
-            CALL exchange_w3d_tile (ng, tile,                           &
-     &                              LBi, UBi, LBj, UBj, 0, N(ng),       &
-     &                              AVERAGE(ng)%avgAKs)
-            CALL mp_exchange3d (ng, tile, model, 1,                     &
-     &                          LBi, UBi, LBj, UBj, 0, N(ng),           &
-     &                          NghostPoints,                           &
-     &                          EWperiodic(ng), NSperiodic(ng),         &
-     &                          AVERAGE(ng)%avgAKs)
-          END IF
-        END IF
 !
 !  Process surface and bottom fluxes.
 !
@@ -1435,24 +1303,6 @@
      &                          NghostPoints,                           &
      &                          EWperiodic(ng), NSperiodic(ng),         &
      &                          AVERAGE(ng)%avgstf)
-          END IF
-        END IF
-        IF (Aout(idTsur(isalt),ng)) THEN
-          DO j=JstrR,JendR
-            DO i=IstrR,IendR
-              AVERAGE(ng)%avgswf(i,j)=rfac(i,j)*                        &
-     &                                AVERAGE(ng)%avgswf(i,j)
-            END DO
-          END DO
-          IF (EWperiodic(ng).or.NSperiodic(ng)) THEN
-            CALL exchange_r2d_tile (ng, tile,                           &
-     &                              LBi, UBi, LBj, UBj,                 &
-     &                              AVERAGE(ng)%avgswf)
-            CALL mp_exchange2d (ng, tile, model, 1,                     &
-     &                          LBi, UBi, LBj, UBj,                     &
-     &                          NghostPoints,                           &
-     &                          EWperiodic(ng), NSperiodic(ng),         &
-     &                          AVERAGE(ng)%avgswf)
           END IF
         END IF
 !

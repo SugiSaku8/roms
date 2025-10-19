@@ -763,57 +763,6 @@
           END IF
         END DO
 !
-!  Define vertical viscosity coefficient.
-!
-        IF (Aout(idVvis,ng)) THEN
-          Vinfo( 1)=Vname(1,idVvis)
-          WRITE (Vinfo( 2),'(a,1x,a)') Prefix, TRIM(Vname(2,idVvis))
-          Vinfo( 3)=Vname(3,idVvis)
-          Vinfo(14)=Vname(4,idVvis)
-          Vinfo(16)=Vname(1,idtime)
-          Vinfo(21)=Vname(6,idVvis)
-          Vinfo(22)='coordinates'
-          Aval(5)=REAL(Iinfo(1,idVvis,ng),r8)
-          status=def_var(ng, model, AVG(ng)%ncid, AVG(ng)%Vid(idVvis),  &
-     &                   NF_FOUT, nvd4, w3dgrd, Aval, Vinfo, ncname,    &
-     &                   SetFillVal = .FALSE.)
-          IF (FoundError(exit_flag, NoError, 1379, MyFile)) RETURN
-        END IF
-!
-!  Define vertical diffusion coefficient for potential temperature.
-!
-        IF (Aout(idTdif,ng)) THEN
-          Vinfo( 1)=Vname(1,idTdif)
-          WRITE (Vinfo( 2),'(a,1x,a)') Prefix, TRIM(Vname(2,idTdif))
-          Vinfo( 3)=Vname(3,idTdif)
-          Vinfo(14)=Vname(4,idTdif)
-          Vinfo(16)=Vname(1,idtime)
-          Vinfo(21)=Vname(6,idTdif)
-          Vinfo(22)='coordinates'
-          Aval(5)=REAL(Iinfo(1,idTdif,ng),r8)
-          status=def_var(ng, model, AVG(ng)%ncid, AVG(ng)%Vid(idTdif),  &
-     &                   NF_FOUT, nvd4, w3dgrd, Aval, Vinfo, ncname,    &
-     &                   SetFillVal = .FALSE.)
-          IF (FoundError(exit_flag, NoError, 1396, MyFile)) RETURN
-        END IF
-!
-!  Define vertical diffusion coefficient for salinity.
-!
-        IF (Aout(idSdif,ng)) THEN
-          Vinfo( 1)=Vname(1,idSdif)
-          WRITE (Vinfo( 2),'(a,1x,a)') Prefix, TRIM(Vname(2,idSdif))
-          Vinfo( 3)=Vname(3,idSdif)
-          Vinfo(14)=Vname(4,idSdif)
-          Vinfo(16)=Vname(1,idtime)
-          Vinfo(21)=Vname(6,idSdif)
-          Vinfo(22)='coordinates'
-          Aval(5)=REAL(Iinfo(1,idSdif,ng),r8)
-          status=def_var(ng, model, AVG(ng)%ncid, AVG(ng)%Vid(idSdif),  &
-     &                   NF_FOUT, nvd4, w3dgrd, Aval, Vinfo, ncname,    &
-     &                   SetFillVal = .FALSE.)
-          IF (FoundError(exit_flag, NoError, 1415, MyFile)) RETURN
-        END IF
-!
 !  Define surface net heat flux.
 !
         IF (Aout(idTsur(itemp),ng)) THEN
@@ -832,26 +781,6 @@
      &                   AVG(ng)%Vid(idTsur(itemp)), NF_FOUT,           &
      &                   nvd3, t2dgrd, Aval, Vinfo, ncname)
           IF (FoundError(exit_flag, NoError, 1556, MyFile)) RETURN
-        END IF
-!
-!  Define surface net salt flux.
-!
-        IF (Aout(idTsur(isalt),ng)) THEN
-          Vinfo( 1)=Vname(1,idTsur(isalt))
-          WRITE (Vinfo( 2),'(a,1x,a)') Prefix,                          &
-     &                                 TRIM(Vname(2,idTsur(isalt)))
-          Vinfo( 3)=Vname(3,idTsur(isalt))
-          Vinfo(11)='upward flux, freshening (net precipitation)'
-          Vinfo(12)='downward flux, salting (net evaporation)'
-          Vinfo(14)=Vname(4,idTsur(isalt))
-          Vinfo(16)=Vname(1,idtime)
-          Vinfo(21)=Vname(6,idTsur(isalt))
-          Vinfo(22)='coordinates'
-          Aval(5)=REAL(Iinfo(1,idTsur(isalt),ng),r8)
-          status=def_var(ng, model, AVG(ng)%ncid,                       &
-     &                   AVG(ng)%Vid(idTsur(isalt)), NF_FOUT,           &
-     &                   nvd3, t2dgrd, Aval, Vinfo, ncname)
-          IF (FoundError(exit_flag, NoError, 1581, MyFile)) RETURN
         END IF
 !
 !  Define surface u-momentum stress.
@@ -1046,23 +975,10 @@
           ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idVVav))) THEN
             got_var(idVVav)=.TRUE.
             AVG(ng)%Vid(idVVav)=var_id(i)
-          ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idVvis))) THEN
-            got_var(idVvis)=.TRUE.
-            AVG(ng)%Vid(idVvis)=var_id(i)
-          ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idTdif))) THEN
-            got_var(idTdif)=.TRUE.
-            AVG(ng)%Vid(idTdif)=var_id(i)
-          ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idSdif))) THEN
-            got_var(idSdif)=.TRUE.
-            AVG(ng)%Vid(idSdif)=var_id(i)
           ELSE IF (TRIM(var_name(i)).eq.                                &
      &             TRIM(Vname(1,idTsur(itemp)))) THEN
             got_var(idTsur(itemp))=.TRUE.
             AVG(ng)%Vid(idTsur(itemp))=var_id(i)
-          ELSE IF (TRIM(var_name(i)).eq.                                &
-     &             TRIM(Vname(1,idTsur(isalt)))) THEN
-            got_var(idTsur(isalt))=.TRUE.
-            AVG(ng)%Vid(idTsur(isalt))=var_id(i)
           ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idUsms))) THEN
             got_var(idUsms)=.TRUE.
             AVG(ng)%Vid(idUsms)=var_id(i)
@@ -1291,32 +1207,8 @@
           exit_flag=3
           RETURN
         END IF
-        IF (.not.got_var(idVvis).and.Aout(idVvis,ng)) THEN
-          IF (Master) WRITE (stdout,60) TRIM(Vname(1,idVvis)),          &
-     &                                  TRIM(ncname)
-          exit_flag=3
-          RETURN
-        END IF
-        IF (.not.got_var(idTdif).and.Aout(idTdif,ng)) THEN
-          IF (Master) WRITE (stdout,60) TRIM(Vname(1,idTdif)),          &
-     &                                  TRIM(ncname)
-          exit_flag=3
-          RETURN
-        END IF
-        IF (.not.got_var(idSdif).and.Aout(idSdif,ng)) THEN
-          IF (Master) WRITE (stdout,60) TRIM(Vname(1,idSdif)),          &
-     &                                  TRIM(ncname)
-          exit_flag=3
-          RETURN
-        END IF
         IF (.not.got_var(idTsur(itemp)).and.Aout(idTsur(itemp),ng)) THEN
           IF (Master) WRITE (stdout,60) TRIM(Vname(1,idTsur(itemp))),   &
-     &                                  TRIM(ncname)
-          exit_flag=3
-          RETURN
-        END IF
-        IF (.not.got_var(idTsur(isalt)).and.Aout(idTsur(isalt),ng)) THEN
-          IF (Master) WRITE (stdout,60) TRIM(Vname(1,idTsur(isalt))),   &
      &                                  TRIM(ncname)
           exit_flag=3
           RETURN

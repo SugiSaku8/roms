@@ -24,8 +24,6 @@
 !
       USE dateclock_mod,        ONLY : time_string
       USE diag_mod,             ONLY : diag
-      USE gls_corstep_mod,      ONLY : gls_corstep
-      USE gls_prestep_mod,      ONLY : gls_prestep
       USE omega_mod,            ONLY : omega
       USE post_initial_mod,     ONLY : post_initial
       USE rho_eos_mod,          ONLY : rho_eos
@@ -198,6 +196,7 @@
               ng=GridNumber(ig,nl)
               DO tile=first_tile(ng),last_tile(ng),+1     ! irreversible
                 CALL set_zeta (ng, tile)
+                CALL set_diags (ng, tile)
                 CALL set_avg (ng, tile)
               END DO
             END DO
@@ -225,7 +224,6 @@
               ng=GridNumber(ig,nl)
               DO tile=last_tile(ng),first_tile(ng),-1
                 CALL rhs3d (ng, tile)
-                CALL gls_prestep (ng, tile)
               END DO
             END DO
 !
@@ -329,7 +327,6 @@
               ng=GridNumber(ig,nl)
               DO tile=first_tile(ng),last_tile(ng),+1
                 CALL omega (ng, tile, iNLM)
-                CALL gls_corstep (ng, tile)
               END DO
             END DO
 !

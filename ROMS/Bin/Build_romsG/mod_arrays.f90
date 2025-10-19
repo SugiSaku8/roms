@@ -28,6 +28,9 @@
       USE mod_coupling,   ONLY : allocate_coupling,                     &
      &                           deallocate_coupling,                   &
      &                           initialize_coupling
+      USE mod_diags,      ONLY : allocate_diags,                        &
+     &                           deallocate_diags,                      &
+     &                           initialize_diags
       USE mod_forces,     ONLY : allocate_forces,                       &
      &                           deallocate_forces,                     &
      &                           initialize_forces
@@ -104,6 +107,7 @@
             CALL allocate_clima (ng, LBi, UBi, LBj, UBj)
           END IF
           CALL allocate_coupling (ng, LBi, UBi, LBj, UBj)
+          CALL allocate_diags (ng, LBi, UBi, LBj, UBj)
           CALL allocate_forces (ng, LBi, UBi, LBj, UBj)
           CALL allocate_grid (ng, ExtractFlag(ng),                      &
      &                        LBi, UBi, LBj, UBj, LBij, UBij)
@@ -157,6 +161,7 @@
           CALL deallocate_clima (ng)
         END IF
         CALL deallocate_coupling (ng)
+        CALL deallocate_diags (ng)
         CALL deallocate_forces (ng)
         CALL deallocate_grid (ng)
         CALL deallocate_mixing (ng)
@@ -217,6 +222,7 @@
             CALL initialize_clima (ng, tile)
           END IF
           CALL initialize_coupling (ng, tile, model)
+          CALL initialize_diags (ng, tile)
           CALL initialize_forces (ng, tile, model)
           CALL initialize_grid (ng, tile, model)
           CALL initialize_mixing (ng, tile, model)

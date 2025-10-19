@@ -193,6 +193,7 @@
         CALL close_file (ng, iNLM, HIS(ng), HIS(ng)%name, Lupdate)
         CALL close_file (ng, iNLM, QCK(ng), QCK(ng)%name, Lupdate)
         CALL close_file (ng, iNLM, AVG(ng), AVG(ng)%name, Lupdate)
+        CALL close_file (ng, iNLM, DIA(ng), DIA(ng)%name, Lupdate)
 !
 !  Report number of time records written.
 !

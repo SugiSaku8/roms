@@ -276,66 +276,6 @@
         RETURN
       END IF
 !
-!  Write out vertical viscosity coefficient.
-!
-      scale=1.0_dp
-      gtype=gfactor*w3dvar
-      status=nf_fwrite3d(ng, model, RST(ng)%ncid, idVvis,               &
-     &                   RST(ng)%Vid(idVvis),                           &
-     &                   RST(ng)%Rindex, gtype,                         &
-     &                   LBi, UBi, LBj, UBj, 0, N(ng), scale,           &
-     &                   GRID(ng) % rmask,                              &
-     &                   MIXING(ng) % Akv,                              &
-     &                   SetFillVal = .FALSE.)
-      IF (FoundError(status, nf90_noerr, 786, MyFile)) THEN
-        IF (Master) THEN
-          WRITE (stdout,20) TRIM(Vname(1,idVvis)), RST(ng)%Rindex
-        END IF
-        exit_flag=3
-        ioerror=status
-        RETURN
-      END IF
-!
-!  Write out vertical diffusion coefficient for potential temperature.
-!
-      scale=1.0_dp
-      gtype=gfactor*w3dvar
-      status=nf_fwrite3d(ng, model, RST(ng)%ncid, idTdif,               &
-     &                   RST(ng)%Vid(idTdif),                           &
-     &                   RST(ng)%Rindex, gtype,                         &
-     &                   LBi, UBi, LBj, UBj, 0, N(ng), scale,           &
-     &                   GRID(ng) % rmask,                              &
-     &                   MIXING(ng) % Akt(:,:,:,itemp),                 &
-     &                   SetFillVal = .FALSE.)
-      IF (FoundError(status, nf90_noerr, 809, MyFile)) THEN
-        IF (Master) THEN
-          WRITE (stdout,20) TRIM(Vname(1,idTdif)), RST(ng)%Rindex
-        END IF
-        exit_flag=3
-        ioerror=status
-        RETURN
-      END IF
-!
-!  Write out vertical diffusion coefficient for salinity.
-!
-      scale=1.0_dp
-      gtype=gfactor*w3dvar
-      status=nf_fwrite3d(ng, model, RST(ng)%ncid, idSdif,               &
-     &                   RST(ng)%Vid(idSdif),                           &
-     &                   RST(ng)%Rindex, gtype,                         &
-     &                   LBi, UBi, LBj, UBj, 0, N(ng), scale,           &
-     &                   GRID(ng) % rmask,                              &
-     &                   MIXING(ng) % Akt(:,:,:,isalt),                 &
-     &                   SetFillVal = .FALSE.)
-      IF (FoundError(status, nf90_noerr, 833, MyFile)) THEN
-        IF (Master) THEN
-          WRITE (stdout,20) TRIM(Vname(1,idSdif)), RST(ng)%Rindex
-        END IF
-        exit_flag=3
-        ioerror=status
-        RETURN
-      END IF
-!
 !-----------------------------------------------------------------------
 !  Synchronize restart NetCDF file to disk.
 !-----------------------------------------------------------------------

@@ -765,72 +765,6 @@
         END IF
       END DO
 !
-!  Write out vertical viscosity coefficient.
-!
-      IF (Aout(idVvis,ng)) THEN
-        scale=1.0_dp
-        gtype=gfactor*w3dvar
-        status=nf_fwrite3d(ng, model, AVG(ng)%ncid, idVvis,             &
-     &                     AVG(ng)%Vid(idVvis),                         &
-     &                     AVG(ng)%Rindex, gtype,                       &
-     &                     LBi, UBi, LBj, UBj, 0, N(ng), scale,         &
-     &                     GRID(ng) % rmask,                            &
-     &                     AVERAGE(ng) % avgAKv,                        &
-     &                     SetFillVal = .FALSE.)
-        IF (FoundError(status, nf90_noerr, 1206, MyFile)) THEN
-          IF (Master) THEN
-            WRITE (stdout,20) TRIM(Vname(1,idVvis)), AVG(ng)%Rindex
-          END IF
-          exit_flag=3
-          ioerror=status
-          RETURN
-        END IF
-      END IF
-!
-!  Write out vertical diffusion coefficient for potential temperature.
-!
-      IF (Aout(idTdif,ng)) THEN
-        scale=1.0_dp
-        gtype=gfactor*w3dvar
-        status=nf_fwrite3d(ng, model, AVG(ng)%ncid, idTdif,             &
-     &                     AVG(ng)%Vid(idTdif),                         &
-     &                     AVG(ng)%Rindex, gtype,                       &
-     &                     LBi, UBi, LBj, UBj, 0, N(ng), scale,         &
-     &                     GRID(ng) % rmask,                            &
-     &                     AVERAGE(ng) % avgAKt,                        &
-     &                     SetFillVal = .FALSE.)
-        IF (FoundError(status, nf90_noerr, 1230, MyFile)) THEN
-          IF (Master) THEN
-            WRITE (stdout,20) TRIM(Vname(1,idTdif)), AVG(ng)%Rindex
-          END IF
-          exit_flag=3
-          ioerror=status
-          RETURN
-        END IF
-      END IF
-!
-!  Write out vertical diffusion coefficient for salinity.
-!
-      IF (Aout(idSdif,ng)) THEN
-        scale=1.0_dp
-        gtype=gfactor*w3dvar
-        status=nf_fwrite3d(ng, model, AVG(ng)%ncid, idSdif,             &
-     &                     AVG(ng)%Vid(idSdif),                         &
-     &                     AVG(ng)%Rindex, gtype,                       &
-     &                     LBi, UBi, LBj, UBj, 0, N(ng), scale,         &
-     &                     GRID(ng) % rmask,                            &
-     &                     AVERAGE(ng) % avgAKs,                        &
-     &                     SetFillVal = .FALSE.)
-        IF (FoundError(status, nf90_noerr, 1256, MyFile)) THEN
-          IF (Master) THEN
-            WRITE (stdout,20) TRIM(Vname(1,idSdif)), AVG(ng)%Rindex
-          END IF
-          exit_flag=3
-          ioerror=status
-          RETURN
-        END IF
-      END IF
-!
 !  Write out surface net heat flux.
 !
       IF (Aout(idTsur(itemp),ng)) THEN
@@ -845,28 +779,6 @@
         IF (FoundError(status, nf90_noerr, 1430, MyFile)) THEN
           IF (Master) THEN
             WRITE (stdout,20) TRIM(Vname(1,idTsur(itemp))),             &
-     &                        AVG(ng)%Rindex
-          END IF
-          exit_flag=3
-          ioerror=status
-          RETURN
-        END IF
-      END IF
-!
-!  Write out surface salt flux  (PSU m/s = kg salt/m2/s).
-!
-      IF (Aout(idTsur(isalt),ng)) THEN
-        scale=1.0_dp
-        gtype=gfactor*r2dvar
-        status=nf_fwrite2d(ng, model, AVG(ng)%ncid, idTsur(isalt),      &
-     &                     AVG(ng)%Vid(idTsur(isalt)),                  &
-     &                     AVG(ng)%Rindex, gtype,                       &
-     &                     LBi, UBi, LBj, UBj, scale,                   &
-     &                     GRID(ng) % rmask,                            &
-     &                     AVERAGE(ng) % avgswf)
-        IF (FoundError(status, nf90_noerr, 1456, MyFile)) THEN
-          IF (Master) THEN
-            WRITE (stdout,20) TRIM(Vname(1,idTsur(isalt))),             &
      &                        AVG(ng)%Rindex
           END IF
           exit_flag=3

@@ -403,51 +403,6 @@
      &                 NF_FRST, nvd4, r3dgrd, Aval, Vinfo, ncname)
         IF (FoundError(exit_flag, NoError, 1123, MyFile)) RETURN
 !
-!  Define vertical viscosity coefficient.
-!
-        Vinfo( 1)=Vname(1,idVvis)
-        Vinfo( 2)=Vname(2,idVvis)
-        Vinfo( 3)=Vname(3,idVvis)
-        Vinfo(14)=Vname(4,idVvis)
-        Vinfo(16)=Vname(1,idtime)
-        Vinfo(21)=Vname(6,idVvis)
-        Vinfo(22)='coordinates'
-        Aval(5)=REAL(Iinfo(1,idVvis,ng),r8)
-        status=def_var(ng, model, RST(ng)%ncid, RST(ng)%Vid(idVvis),    &
-     &                 NF_FRST, nvd4, w3dgrd, Aval, Vinfo, ncname,      &
-     &                 SetFillVal = .FALSE.)
-        IF (FoundError(exit_flag, NoError, 1212, MyFile)) RETURN
-!
-!  Define vertical diffusion coefficient for potential temperature.
-!
-        Vinfo( 1)=Vname(1,idTdif)
-        Vinfo( 2)=Vname(2,idTdif)
-        Vinfo( 3)=Vname(3,idTdif)
-        Vinfo(14)=Vname(4,idTdif)
-        Vinfo(16)=Vname(1,idtime)
-        Vinfo(21)=Vname(6,idTdif)
-        Vinfo(22)='coordinates'
-        Aval(5)=REAL(Iinfo(1,idTdif,ng),r8)
-        status=def_var(ng, model, RST(ng)%ncid, RST(ng)%Vid(idTdif),    &
-     &                 NF_FRST, nvd4, w3dgrd, Aval, Vinfo, ncname,      &
-     &                 SetFillVal = .FALSE.)
-        IF (FoundError(exit_flag, NoError, 1227, MyFile)) RETURN
-!
-!  Define vertical diffusion coefficient for salinity.
-!
-        Vinfo( 1)=Vname(1,idSdif)
-        Vinfo( 2)=Vname(2,idSdif)
-        Vinfo( 3)=Vname(3,idSdif)
-        Vinfo(14)=Vname(4,idSdif)
-        Vinfo(16)=Vname(1,idtime)
-        Vinfo(21)=Vname(6,idSdif)
-        Vinfo(22)='coordinates'
-        Aval(5)=REAL(Iinfo(1,idSdif,ng),r8)
-        status=def_var(ng, model, RST(ng)%ncid, RST(ng)%Vid(idSdif),    &
-     &                 NF_FRST, nvd4, w3dgrd, Aval, Vinfo, ncname,      &
-     &                 SetFillVal = .FALSE.)
-        IF (FoundError(exit_flag, NoError, 1244, MyFile)) RETURN
-!
 !-----------------------------------------------------------------------
 !  Leave definition mode.
 !-----------------------------------------------------------------------

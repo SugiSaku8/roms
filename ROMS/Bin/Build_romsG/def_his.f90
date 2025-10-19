@@ -755,57 +755,6 @@
           IF (FoundError(exit_flag, NoError, 1630, MyFile)) RETURN
         END IF
 !
-!  Define vertical diffusion coefficient for salinity.
-!
-        IF (Hout(idSdif,ng)) THEN
-          Vinfo( 1)=Vname(1,idSdif)
-          Vinfo( 2)=Vname(2,idSdif)
-          Vinfo( 3)=Vname(3,idSdif)
-          Vinfo(14)=Vname(4,idSdif)
-          Vinfo(16)=Vname(1,idtime)
-          Vinfo(21)=Vname(6,idSdif)
-          Vinfo(22)='coordinates'
-          Aval(5)=REAL(Iinfo(1,idSdif,ng),r8)
-          status=def_var(ng, model, HIS(ng)%ncid, HIS(ng)%Vid(idSdif),  &
-     &                   NF_FOUT, nvd4, w3dgrd, Aval, Vinfo, ncname,    &
-     &                   SetFillVal = .FALSE.)
-          IF (FoundError(exit_flag, NoError, 1652, MyFile)) RETURN
-        END IF
-!
-!  Define turbulent kinetic energy.
-!
-        IF (Hout(idMtke,ng)) THEN
-          Vinfo( 1)=Vname(1,idMtke)
-          Vinfo( 2)=Vname(2,idMtke)
-          Vinfo( 3)=Vname(3,idMtke)
-          Vinfo(14)=Vname(4,idMtke)
-          Vinfo(16)=Vname(1,idtime)
-          Vinfo(21)=Vname(6,idMtke)
-          Vinfo(22)='coordinates'
-          Aval(5)=REAL(Iinfo(1,idMtke,ng),r8)
-          status=def_var(ng, model, HIS(ng)%ncid, HIS(ng)%Vid(idMtke),  &
-     &                   NF_FOUT, nvd4, w3dgrd, Aval, Vinfo, ncname,    &
-     &                   SetFillVal = .FALSE.)
-          IF (FoundError(exit_flag, NoError, 1674, MyFile)) RETURN
-        END IF
-!
-!  Define turbulent kinetic energy time length scale.
-!
-        IF (Hout(idMtls,ng)) THEN
-          Vinfo( 1)=Vname(1,idMtls)
-          Vinfo( 2)=Vname(2,idMtls)
-          Vinfo( 3)=Vname(3,idMtls)
-          Vinfo(14)=Vname(4,idMtls)
-          Vinfo(16)=Vname(1,idtime)
-          Vinfo(21)=Vname(6,idMtls)
-          Vinfo(22)='coordinates'
-          Aval(5)=REAL(Iinfo(1,idMtls,ng),r8)
-          status=def_var(ng, model, HIS(ng)%ncid, HIS(ng)%Vid(idMtls),  &
-     &                   NF_FOUT, nvd4, w3dgrd, Aval, Vinfo, ncname,    &
-     &                   SetFillVal = .FALSE.)
-          IF (FoundError(exit_flag, NoError, 1712, MyFile)) RETURN
-        END IF
-!
 !  Define surface active tracer fluxes.
 !
         DO itrc=1,NAT
@@ -1051,12 +1000,6 @@
           ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idSdif))) THEN
             got_var(idSdif)=.TRUE.
             HIS(ng)%Vid(idSdif)=var_id(i)
-          ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idMtke))) THEN
-            got_var(idMtke)=.TRUE.
-            HIS(ng)%Vid(idMtke)=var_id(i)
-          ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idMtls))) THEN
-            got_var(idMtls)=.TRUE.
-            HIS(ng)%Vid(idMtls)=var_id(i)
           ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idEmPf))) THEN
             got_var(idEmPf)=.TRUE.
             HIS(ng)%Vid(idEmPf)=var_id(i)
@@ -1253,24 +1196,6 @@
         END IF
         IF (.not.got_var(idTdif).and.Hout(idTdif,ng)) THEN
           IF (Master) WRITE (stdout,70) TRIM(Vname(1,idTdif)),          &
-     &                                  TRIM(ncname)
-          exit_flag=3
-          RETURN
-        END IF
-        IF (.not.got_var(idSdif).and.Hout(idSdif,ng)) THEN
-          IF (Master) WRITE (stdout,70) TRIM(Vname(1,idSdif)),          &
-     &                                  TRIM(ncname)
-          exit_flag=3
-          RETURN
-        END IF
-        IF (.not.got_var(idMtke).and.Hout(idMtke,ng)) THEN
-          IF (Master) WRITE (stdout,70) TRIM(Vname(1,idMtke)),          &
-     &                                  TRIM(ncname)
-          exit_flag=3
-          RETURN
-        END IF
-        IF (.not.got_var(idMtls).and.Hout(idMtls,ng)) THEN
-          IF (Master) WRITE (stdout,70) TRIM(Vname(1,idMtls)),          &
      &                                  TRIM(ncname)
           exit_flag=3
           RETURN

@@ -73,13 +73,17 @@
 !  rmask_avg  Time-averaged full mask at RHO-points (0=dry, 1=wet).    !
 !  rmask_avg  Time-averaged full mask at   U-points (0=dry, 1=wet).    !
 !  rmask_avg  Time-averaged full mask at   V-points (0=dry, 1=wet).    !
+!
+!  pmask_dia  Diagnostics full mask at PSI-points (0=dry, 1=wet).      !
+!  rmask_dia  Diagnostics full mask at RHO-points (0=dry, 1=wet).      !
+!  rmask_dia  Diagnostics full mask at   U-points (0=dry, 1=wet).      !
+!  rmask_dia  Diagnostics full mask at   V-points (0=dry, 1=wet).      !
 !                                                                      !
 !  pmask_full Full mask at PSI-points (0=dry, 1=wet, 2=no-slip).       !
 !  rmask_full Full mask at RHO-points (0=dry, 1=wet).                  !
 !  rmask_full Full mask at   U-points (0=dry, 1=wet).                  !
 !  rmask_full Full mask at   V-points (0=dry, 1=wet).                  !
-!  ZoBot      Bottom roughness length (m).                             !
-!  rdrag      Linear drag coefficient (m/s).                           !
+!  rdrag2     Quadratic drag coefficient (nondimensional).             !
 !  xp         XI-coordinates (m) at PSI-points.                        !
 !  xr         XI-coordinates (m) at RHO-points.                        !
 !  xu         XI-coordinates (m) at U-points.                          !
@@ -152,8 +156,8 @@
           real(r8), pointer :: pnom_r(:,:)
           real(r8), pointer :: pnom_u(:,:)
           real(r8), pointer :: pnom_v(:,:)
-          real(r8), pointer :: ZoBot(:,:)
           real(r8), pointer :: rdrag(:,:)
+          real(r8), pointer :: rdrag2(:,:)
           real(r8), pointer :: xp(:,:)
           real(r8), pointer :: xr(:,:)
           real(r8), pointer :: xu(:,:)
@@ -178,6 +182,10 @@
           real(r8), pointer :: rmask_avg(:,:)
           real(r8), pointer :: umask_avg(:,:)
           real(r8), pointer :: vmask_avg(:,:)
+          real(r8), pointer :: pmask_dia(:,:)
+          real(r8), pointer :: rmask_dia(:,:)
+          real(r8), pointer :: umask_dia(:,:)
+          real(r8), pointer :: vmask_dia(:,:)
           real(r8), pointer :: pmask_full(:,:)
           real(r8), pointer :: rmask_full(:,:)
           real(r8), pointer :: umask_full(:,:)
@@ -293,9 +301,9 @@
       Dmem(ng)=Dmem(ng)+size2d
       allocate ( GRID(ng) % pnom_v(LBi:UBi,LBj:UBj) )
       Dmem(ng)=Dmem(ng)+size2d
-      allocate ( GRID(ng) % ZoBot(LBi:UBi,LBj:UBj) )
-      Dmem(ng)=Dmem(ng)+size2d
       allocate ( GRID(ng) % rdrag(LBi:UBi,LBj:UBj) )
+      Dmem(ng)=Dmem(ng)+size2d
+      allocate ( GRID(ng) % rdrag2(LBi:UBi,LBj:UBj) )
       Dmem(ng)=Dmem(ng)+size2d
       allocate ( GRID(ng) % xp(LBi:UBi,LBj:UBj) )
       Dmem(ng)=Dmem(ng)+size2d
@@ -344,6 +352,14 @@
       allocate ( GRID(ng) % umask_avg(LBi:UBi,LBj:UBj) )
       Dmem(ng)=Dmem(ng)+size2d
       allocate ( GRID(ng) % vmask_avg(LBi:UBi,LBj:UBj) )
+      Dmem(ng)=Dmem(ng)+size2d
+      allocate ( GRID(ng) % pmask_dia(LBi:UBi,LBj:UBj) )
+      Dmem(ng)=Dmem(ng)+size2d
+      allocate ( GRID(ng) % rmask_dia(LBi:UBi,LBj:UBj) )
+      Dmem(ng)=Dmem(ng)+size2d
+      allocate ( GRID(ng) % umask_dia(LBi:UBi,LBj:UBj) )
+      Dmem(ng)=Dmem(ng)+size2d
+      allocate ( GRID(ng) % vmask_dia(LBi:UBi,LBj:UBj) )
       Dmem(ng)=Dmem(ng)+size2d
       allocate ( GRID(ng) % pmask_full(LBi:UBi,LBj:UBj) )
       Dmem(ng)=Dmem(ng)+size2d
@@ -532,8 +548,8 @@
             GRID(ng) % pnom_r(i,j) = IniVal
             GRID(ng) % pnom_u(i,j) = IniVal
             GRID(ng) % pnom_v(i,j) = IniVal
-            GRID(ng) % ZoBot(i,j) = Zob(ng)
             GRID(ng) % rdrag(i,j) = rdrg(ng)
+            GRID(ng) % rdrag2(i,j) = rdrg2(ng)
             GRID(ng) % xp(i,j) = IniVal
             GRID(ng) % xr(i,j) = IniMetricVal
             GRID(ng) % xu(i,j) = IniMetricVal
@@ -550,6 +566,10 @@
             GRID(ng) % rmask_avg(i,j) = IniVal
             GRID(ng) % umask_avg(i,j) = IniVal
             GRID(ng) % vmask_avg(i,j) = IniVal
+            GRID(ng) % pmask_dia(i,j) = IniVal
+            GRID(ng) % rmask_dia(i,j) = IniVal
+            GRID(ng) % umask_dia(i,j) = IniVal
+            GRID(ng) % vmask_dia(i,j) = IniVal
             GRID(ng) % pmask_full(i,j) = IniVal
             GRID(ng) % rmask_full(i,j) = IniVal
             GRID(ng) % umask_full(i,j) = IniVal

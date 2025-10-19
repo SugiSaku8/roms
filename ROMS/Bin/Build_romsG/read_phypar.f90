@@ -221,12 +221,6 @@
                 exit_flag=5
                 RETURN
               END IF
-              IF (NAT.ne.2) THEN
-                IF (Master) WRITE (out,290) 'NAT = ', NAT,              &
-     &            'make sure that NAT is equal to 2.'
-                exit_flag=5
-                RETURN
-              END IF
             CASE ('NtileI')
               Npts=load_i(Nval, Rval, Ngrids, NtileI)
               NtileX(1:Ngrids)=NtileI(1:Ngrids)
@@ -291,9 +285,6 @@
             CASE ('LBC(isVvel)')
               Npts=load_lbc(Nval, Cval, line, nline, isVvel, igrid,     &
      &                      0, 0, Vname(1,idVvel), LBC)
-            CASE ('LBC(isMtke)')
-              Npts=load_lbc(Nval, Cval, line, nline, isMtke, igrid,     &
-     &                      0, 0, Vname(1,idMtke), LBC)
             CASE ('LBC(isTvar)')
               IF (itracer.lt.(NAT+NPT)) THEN
                 itracer=itracer+1
@@ -1018,14 +1009,6 @@
               END IF
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Hout(idTdif,1:Ngrids)=Lswitch(1:Ngrids)
-            CASE ('Hout(idSdif)')
-              IF (idSdif.eq.0) THEN
-                IF (Master) WRITE (out,280) 'idSdif'
-                exit_flag=5
-                RETURN
-              END IF
-              Npts=load_l(Nval, Cval, Ngrids, Lswitch)
-              Hout(idSdif,1:Ngrids)=Lswitch(1:Ngrids)
             CASE ('Hout(idHsbl)')
               IF (idHsbl.eq.0) THEN
                 IF (Master) WRITE (out,280) 'idHsbl'
@@ -1267,9 +1250,6 @@
             CASE ('Qout(idTdif)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Qout(idTdif,1:Ngrids)=Lswitch(1:Ngrids)
-            CASE ('Qout(idSdif)')
-              Npts=load_l(Nval, Cval, Ngrids, Lswitch)
-              Qout(idSdif,1:Ngrids)=Lswitch(1:Ngrids)
             CASE ('Qout(idHsbl)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Qout(idHsbl,1:Ngrids)=Lswitch(1:Ngrids)
@@ -1370,9 +1350,6 @@
             CASE ('Aout(idTdif)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Aout(idTdif,1:Ngrids)=Lswitch(1:Ngrids)
-            CASE ('Aout(idSdif)')
-              Npts=load_l(Nval, Cval, Ngrids, Lswitch)
-              Aout(idSdif,1:Ngrids)=Lswitch(1:Ngrids)
             CASE ('Aout(idHsbl)')
               Npts=load_l(Nval, Cval, Ngrids, Lswitch)
               Aout(idHsbl,1:Ngrids)=Lswitch(1:Ngrids)
@@ -1975,6 +1952,15 @@
           CALL edit_file_struct (ng, OutFiles, AVG)
           AVG(ng)%load=0       ! because delayed creation of NetCDF file
         END IF                 ! due to time-averaging
+        IF ((nDIA(ng).gt.0).and.(ndefDIA(ng).gt.0)) THEN
+          OutFiles=ntimes(ng)/ndefDIA(ng)
+          IF ((nDIA(ng).eq.ndefDIA(ng)).or.                             &
+     &        (MOD(ntimes(ng),ndefDIA(ng)).ge.nDIA(ng))) THEN
+            OutFiles=Outfiles+1
+          END IF
+          CALL edit_file_struct (ng, OutFiles, DIA)
+          DIA(ng)%load=0       ! because delayed creation of NetCDF file
+        END IF                 ! due to time-averaging
       END DO
 !
 !-----------------------------------------------------------------------
@@ -2060,6 +2046,17 @@
      &            'Number of timesteps between the creation of new',    &
      &            'time-averaged files.'
           END IF
+          WRITE (out,130) ntsDIA(ng), 'ntsDIA',                         &
+     &          'Starting timestep for the accumulation of output',     &
+     &          'time-averaged diagnostics data.'
+          WRITE (out,130) nDIA(ng), 'nDIA',                             &
+     &          'Number of timesteps between the writing of',           &
+     &          'time-averaged data into diagnostics file.'
+          IF (ndefDIA(ng).gt.0) THEN
+            WRITE (out,130) ndefDIA(ng), 'ndefDIA',                     &
+     &            'Number of timesteps between the creation of new',    &
+     &            'diagnostic files.'
+          END IF
           DO i=1,NAT+NPT
             itrc=i
             WRITE (out,190) nl_tnu2(itrc,ng), 'nl_tnu2', itrc,          &
@@ -2097,54 +2094,12 @@
           WRITE (out,210) Akv_bak(ng), 'Akv_bak',                       &
      &          'Background vertical mixing coefficient (m2/s)',        &
      &          'for momentum.'
-          WRITE (out,210) Akk_bak(ng), 'Akk_bak',                       &
-     &          'Background vertical mixing coefficient (m2/s)',        &
-     &          'for turbulent energy.'
-          WRITE (out,210) Akp_bak(ng), 'Akp_bak',                       &
-     &          'Background vertical mixing coefficient (m2/s)',        &
-     &          'for turbulent generic statistical field.'
-          WRITE (out,140) gls_p(ng), 'gls_p',                           &
-     &          'GLS stability exponent.'
-          WRITE (out,140) gls_m(ng), 'gls_m',                           &
-     &          'GLS turbulent kinetic energy exponent.'
-          WRITE (out,140) gls_n(ng), 'gls_n',                           &
-     &          'GLS turbulent length scale exponent.'
-          WRITE (out,200) gls_Kmin(ng), 'gls_Kmin',                     &
-     &          'GLS minimum value of turbulent kinetic energy.'
-          WRITE (out,200) gls_Pmin(ng), 'gls_Pmin',                     &
-     &          'GLS minimum value of dissipation.'
-          WRITE (out,200) gls_cmu0(ng), 'gls_cmu0',                     &
-     &          'GLS stability coefficient.'
-          WRITE (out,200) gls_c1(ng), 'gls_c1',                         &
-     &          'GLS shear production coefficient.'
-          WRITE (out,200) gls_c2(ng), 'gls_c2',                         &
-     &          'GLS dissipation coefficient.'
-          WRITE (out,200) gls_c3m(ng), 'gls_c3m',                       &
-     &          'GLS stable buoyancy production coefficient.'
-          WRITE (out,200) gls_c3p(ng), 'gls_c3p',                       &
-     &          'GLS unstable buoyancy production coefficient.'
-          WRITE (out,200) gls_sigk(ng), 'gls_sigk',                     &
-     &          'GLS constant Schmidt number for TKE.'
-          WRITE (out,200) gls_sigp(ng), 'gls_sigp',                     &
-     &          'GLS constant Schmidt number for PSI.'
-          WRITE (out,140) charnok_alpha(ng), 'charnok_alpha',           &
-     &          'Charnock factor for Zos calculation.'
-          WRITE (out,140) zos_hsig_alpha(ng), 'zos_hsig_alpha',         &
-     &          'Factor for Zos calculation using Hsig(Awave).'
-          WRITE (out,140) sz_alpha(ng), 'sz_alpha',                     &
-     &          'Factor for Wave dissipation surface tke flux .'
-          WRITE (out,140) crgban_cw(ng), 'crgban_cw',                   &
-     &          'Factor for Craig/Banner surface tke flux.'
-          WRITE (out,140) wec_alpha(ng), 'wec_alpha',                   &
-     &          'WEC factor for roller/breaking energy distribution.'
           WRITE (out,200) rdrg(ng), 'rdrg',                             &
      &          'Linear bottom drag coefficient (m/s).'
           WRITE (out,200) rdrg2(ng), 'rdrg2',                           &
      &          'Quadratic bottom drag coefficient.'
           WRITE (out,200) Zob(ng), 'Zob',                               &
      &          'Bottom roughness (m).'
-          WRITE (out,200) Zos(ng), 'Zos',                               &
-     &          'Surface roughness (m).'
           WRITE (out,120) Vtransform(ng), 'Vtransform',                 &
      &          'S-coordinate transformation equation.'
           WRITE (out,120) Vstretching(ng), 'Vstretching',               &
@@ -2393,9 +2348,6 @@
             IF (Hout(idTsur(itemp),ng)) WRITE (out,170)                 &
      &          Hout(idTsur(itemp),ng), 'Hout(idTsur)',                 &
      &         'Write out surface net heat flux.'
-            IF (Hout(idTsur(isalt),ng)) WRITE (out,170)                 &
-     &          Hout(idTsur(isalt),ng), 'Hout(idTsur)',                 &
-     &         'Write out surface net salt flux.'
             IF (Hout(idDano,ng)) WRITE (out,170) Hout(idDano,ng),       &
      &         'Hout(idDano)',                                          &
      &         'Write out density anomaly.'
@@ -2405,15 +2357,6 @@
             IF (Hout(idTdif,ng)) WRITE (out,170) Hout(idTdif,ng),       &
      &         'Hout(idTdif)',                                          &
      &         'Write out vertical diffusion: AKt(itemp).'
-            IF (Hout(idSdif,ng)) WRITE (out,170) Hout(idSdif,ng),       &
-     &         'Hout(idSdif)',                                          &
-     &         'Write out vertical diffusion: AKt(isalt).'
-            IF (Hout(idMtke,ng)) WRITE (out,170) Hout(idMtke,ng),       &
-     &         'Hout(idMtke)',                                          &
-     &         'Write out turbulent kinetic energy.'
-            IF (Hout(idMtls,ng)) WRITE (out,170) Hout(idMtls,ng),       &
-     &         'Hout(idMtls)',                                          &
-     &         'Write out turbulent generic length-scale.'
           END IF
           IF ((nQCK(ng).gt.0).and.ANY(Qout(:,ng))) THEN
             WRITE (out,'(1x)')
@@ -2524,9 +2467,6 @@
             IF (Qout(idTsur(itemp),ng)) WRITE (out,170)                 &
      &          Qout(idTsur(itemp),ng), 'Qout(idTsur)',                 &
      &         'Write out surface net heat flux.'
-            IF (Qout(idTsur(isalt),ng)) WRITE (out,170)                 &
-     &          Qout(idTsur(isalt),ng), 'Qout(idTsur)',                 &
-     &         'Write out surface net salt flux.'
             IF (Qout(idDano,ng)) WRITE (out,170) Qout(idDano,ng),       &
      &         'Qout(idDano)',                                          &
      &         'Write out density anomaly.'
@@ -2536,15 +2476,6 @@
             IF (Qout(idTdif,ng)) WRITE (out,170) Qout(idTdif,ng),       &
      &         'Qout(idTdif)',                                          &
      &         'Write out vertical diffusion: AKt(itemp).'
-            IF (Qout(idSdif,ng)) WRITE (out,170) Qout(idSdif,ng),       &
-     &         'Qout(idSdif)',                                          &
-     &         'Write out vertical diffusion: AKt(isalt).'
-            IF (Qout(idMtke,ng)) WRITE (out,170) Qout(idMtke,ng),       &
-     &         'Qout(idMtke)',                                          &
-     &         'Write out turbulent kinetic energy.'
-            IF (Qout(idMtls,ng)) WRITE (out,170) Qout(idMtls,ng),       &
-     &         'Qout(idMtls)',                                          &
-     &         'Write out turbulent generic length-scale.'
           END IF
           IF ((nAVG(ng).gt.0).and.ANY(Aout(:,ng))) THEN
             WRITE (out,'(1x)')
@@ -2602,21 +2533,9 @@
             IF (Aout(idTsur(itemp),ng)) WRITE (out,170)                 &
      &          Aout(idTsur(itemp),ng), 'Aout(idTsur)',                 &
      &         'Write out averaged surface net heat flux.'
-            IF (Aout(idTsur(isalt),ng)) WRITE (out,170)                 &
-     &          Aout(idTsur(isalt),ng), 'Aout(idTsur)',                 &
-     &         'Write out averaged surface net salt flux.'
             IF (Aout(idDano,ng)) WRITE (out,170) Aout(idDano,ng),       &
      &         'Aout(idDano)',                                          &
      &         'Write out averaged density anomaly.'
-            IF (Aout(idVvis,ng)) WRITE (out,170) Aout(idVvis,ng),       &
-     &         'Aout(idVvis)',                                          &
-     &         'Write out averaged vertical viscosity: AKv.'
-            IF (Aout(idTdif,ng)) WRITE (out,170) Aout(idTdif,ng),       &
-     &         'Aout(idTdif)',                                          &
-     &         'Write out averaged vertical diffusion: AKt(itemp).'
-            IF (Aout(idSdif,ng)) WRITE (out,170) Aout(idSdif,ng),       &
-     &         'Aout(idSdif)',                                          &
-     &         'Write out averaged vertical diffusion: AKt(isalt).'
             IF (Aout(id2dRV,ng)) WRITE (out,170) Aout(id2dRV,ng),       &
      &         'Aout(id2dRV)',                                          &
      &         'Write out averaged 2D relative vorticity.'
@@ -2720,6 +2639,13 @@
           ELSE
             WRITE (out,230) '       Prefix for Averages Files:  ',      &
      &                      TRIM(AVG(ng)%head)
+          END IF
+          IF (ndefDIA(ng).eq.0) THEN
+            WRITE (out,230) '         Output Diagnostics File:  ',      &
+     &                      TRIM(DIA(ng)%name)
+          ELSE
+            WRITE (out,230) '    Prefix for Diagnostics Files:  ',      &
+     &                      TRIM(DIA(ng)%head)
           END IF
         END IF
         fname=GRD(ng)%name

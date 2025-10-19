@@ -476,6 +476,14 @@
       integer, allocatable :: idUTav(:)     ! <u*t> for active tracers
       integer, allocatable :: idVTav(:)     ! <v*t> for active tracers
 !
+!  Tracer/Momentum Diagnostic variable IDs.
+!
+      integer, allocatable :: idDtrc(:,:)   ! tracers terms
+      integer, allocatable :: idDu2d(:)     ! 2D u-momentum terms
+      integer, allocatable :: idDv2d(:)     ! 2D v-momentum terms
+      integer, allocatable :: idDu3d(:)     ! 3D u-momentum terms
+      integer, allocatable :: idDv3d(:)     ! 3D v-momentum terms
+!
 !  State variables indices (order is important). Notice that current
 !  extra-observations index (isRadial) needs to be initialized to zero
 !  here and reset elsewhere to the value provided by the user.
@@ -795,6 +803,26 @@
         allocate ( idVTav(MT) )
         Dmem(1)=Dmem(1)+REAL(MT,r8)
       END IF
+      IF (.not.allocated(idDtrc)) THEN
+        allocate ( idDtrc(MT,NDT) )
+        Dmem(1)=Dmem(1)+REAL(MT*NDT,r8)
+      END IF
+      IF (.not.allocated(idDu2d)) THEN
+        allocate ( idDu2d(NDM2d) )
+        Dmem(1)=Dmem(1)+REAL(NDM2d,r8)
+      END IF
+      IF (.not.allocated(idDv2d)) THEN
+        allocate ( idDv2d(NDM2d) )
+        Dmem(1)=Dmem(1)+REAL(NDM2d,r8)
+      END IF
+      IF (.not.allocated(idDu3d)) THEN
+        allocate ( idDu3d(NDM3d) )
+        Dmem(1)=Dmem(1)+REAL(NDM3d,r8)
+      END IF
+      IF (.not.allocated(idDv3d)) THEN
+        allocate ( idDv3d(NDM3d) )
+        Dmem(1)=Dmem(1)+REAL(NDM3d,r8)
+      END IF
       IF (.not.allocated(isTsur)) THEN
         allocate ( isTsur(MT) )
         Dmem(1)=Dmem(1)+REAL(MT,r8)
@@ -975,6 +1003,12 @@
       IF (allocated(idUTav))      deallocate ( idUTav )
       IF (allocated(idVTav))      deallocate ( idVTav )
 !
+      IF (allocated(idDtrc))      deallocate ( idDtrc )
+      IF (allocated(idDu2d))      deallocate ( idDu2d )
+      IF (allocated(idDv2d))      deallocate ( idDv2d )
+      IF (allocated(idDu3d))      deallocate ( idDu3d )
+      IF (allocated(idDv3d))      deallocate ( idDv3d )
+!
       IF (allocated(isTsur))      deallocate ( isTsur )
       IF (allocated(isTvar))      deallocate ( isTvar )
       IF (allocated(idBvar))      deallocate ( idBvar )
@@ -1106,8 +1140,6 @@
         ic=ic+1
         isTvar(i)=ic
       END DO
-      ic=ic+1
-      isMtke=ic
       ic_brylast=ic
       ic=ic+1
       isWvel=ic                               ! no LBC index
@@ -1177,7 +1209,7 @@
 !  assigned in the 'makefile' to the CPPFLAGS macro.
 !
       git_url="https://github.com/SugiSaku8/roms.git"
-      git_rev="e4b9237978dfa9cf3e9266871dc2410eec4245fb"
+      git_rev="fd00bca972d99b2adb3b35893b2ff89c60ec1034"
 !
       svn_url='https://myroms.org/svn/trunk'
       svn_rev=' '
@@ -1361,14 +1393,8 @@
             idsurT(itemp)=varid
           CASE ('idzslT(itemp)')
             idzslT(itemp)=varid
-          CASE ('idsurT(isalt)')
-            idsurT(isalt)=varid
-          CASE ('idzslT(isalt)')
-            idzslT(isalt)=varid
           CASE ('idTvar(itemp)')
             idTvar(itemp)=varid
-          CASE ('idTvar(isalt)')
-            idTvar(isalt)=varid
           CASE ('idUsms')
             idUsms=varid
           CASE ('idVsms')
@@ -1393,16 +1419,10 @@
             iddQdT=varid
           CASE ('idsfwf')
             idsfwf=varid
-          CASE ('idTsur(isalt)')
-            idTsur(isalt)=varid
           CASE ('idTbot(itemp)')
             idTbot(itemp)=varid
-          CASE ('idTbot(isalt)')
-            idTbot(isalt)=varid
           CASE ('idGhat(itemp)')
             idGhat(itemp)=varid
-          CASE ('idGhat(isalt)')
-            idGhat(isalt)=varid
           CASE ('idMtke')
             idMtke=varid
           CASE ('idMtls')
@@ -1412,9 +1432,6 @@
           CASE ('idTdif')
             idTdif=varid
             idDiff(itemp)=idTdif
-          CASE ('idSdif')
-            idSdif=varid
-            idDiff(isalt)=idSdif
           CASE ('idVmLS')
             idVmLS=varid
           CASE ('idVmKK')
@@ -1469,14 +1486,6 @@
             idTbry(isouth,itemp)=varid
           CASE ('idTbry(inorth,itemp)')
             idTbry(inorth,itemp)=varid
-          CASE ('idTbry(iwest,isalt)')
-            idTbry(iwest,isalt)=varid
-          CASE ('idTbry(ieast,isalt)')
-            idTbry(ieast,isalt)=varid
-          CASE ('idTbry(isouth,isalt)')
-            idTbry(isouth,isalt)=varid
-          CASE ('idTbry(inorth,isalt)')
-            idTbry(inorth,isalt)=varid
           CASE ('idPwet')
             idPwet=varid
           CASE ('idRwet')
@@ -1629,8 +1638,6 @@
             idRflg=varid
           CASE ('idRtrc(itemp)')
             idRtrc(itemp)=varid
-          CASE ('idRtrc(isalt)')
-            idRtrc(isalt)=varid
           CASE ('idHsbl')
             idHsbl=varid
           CASE ('idHbbl')
@@ -1990,7 +1997,6 @@
       DO i=1,MT
         idSvar(isTvar(i))=idTvar(i)
       END DO
-      idSvar(isMtke)=idMtke
       idSvar(isWvel)=idWvel
 !
 !-----------------------------------------------------------------------
@@ -2005,7 +2011,6 @@
       DO i=1,MT
         idBvar(isTvar(i))=idTvar(i)
       END DO
-      idBvar(isMtke)=idMtke
 !
 !  Save last variable ID counter used.
 !

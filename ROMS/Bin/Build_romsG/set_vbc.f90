@@ -68,7 +68,7 @@
      &                   IminS, ImaxS, JminS, JmaxS,                    &
      &                   nrhs(ng),                                      &
      &                   GRID(ng) % Hz,                                 &
-     &                   GRID(ng) % rdrag,                              &
+     &                   GRID(ng) % rdrag2,                             &
      &                   GRID(ng) % z_r,                                &
      &                   GRID(ng) % z_w,                                &
      &                   GRID(ng) % rmask,                              &
@@ -92,7 +92,7 @@
      &                         IminS, ImaxS, JminS, JmaxS,              &
      &                         nrhs,                                    &
      &                         Hz,                                      &
-     &                         rdrag,                                   &
+     &                         rdrag2,                                  &
      &                         z_r, z_w,                                &
      &                         rmask,                                   &
      &                         t,                                       &
@@ -116,7 +116,7 @@
       integer, intent(in) :: nrhs
 !
       real(r8), intent(in) :: Hz(LBi:,LBj:,:)
-      real(r8), intent(in) :: rdrag(LBi:,LBj:)
+      real(r8), intent(in) :: rdrag2(LBi:,LBj:)
       real(r8), intent(in) :: z_r(LBi:,LBj:,:)
       real(r8), intent(in) :: z_w(LBi:,LBj:,0:)
       real(r8), intent(in) :: rmask(LBi:,LBj:)
@@ -217,39 +217,45 @@
       END DO
 !
 !-----------------------------------------------------------------------
-!  Multiply freshwater fluxes with surface and bottom salinity.
-!
-!  If appropriate, apply correction. Notice that input stflux(:,:,isalt)
-!  is the net freshwater flux (E-P; m/s) from data, coupling, bulk flux
-!  parameterization, or analytical formula. It has not been multiplied
-!  by the surface and bottom salinity.
-!-----------------------------------------------------------------------
-!
-      DO j=JstrR,JendR
-        DO i=IstrR,IendR
-          EmP=stflux(i,j,isalt)
-          stflx(i,j,isalt)=EmP*t(i,j,N(ng),nrhs,isalt)
-          stflx(i,j,isalt) = rmask(i,j)*stflx(i,j,isalt)
-          btflx(i,j,isalt)=btflx(i,j,isalt)*t(i,j,1,nrhs,isalt)
-        END DO
-      END DO
-!
-!-----------------------------------------------------------------------
 !  Set kinematic bottom momentum flux (m2/s2).
 !-----------------------------------------------------------------------
 !
-!  Set linear bottom stress.
+!  Set limiting factor for bottom stress. The bottom stress is adjusted
+!  to not change the direction of momentum.  It only should slow down
+!  to zero.  The value of 0.75 is arbitrary limitation assigment.
+!
+      cff=0.75_r8/dt(ng)
+!
+!  Set quadratic bottom stress.
 !
       DO j=Jstr,Jend
         DO i=IstrU,Iend
-          bustr(i,j)=0.5_r8*(rdrag(i-1,j)+rdrag(i,j))*                  &
-     &               u(i,j,1,nrhs)
+          cff1=0.25_r8*(v(i  ,j  ,1,nrhs)+                              &
+     &                  v(i  ,j+1,1,nrhs)+                              &
+     &                  v(i-1,j  ,1,nrhs)+                              &
+     &                  v(i-1,j+1,1,nrhs))
+          cff2=SQRT(u(i,j,1,nrhs)*u(i,j,1,nrhs)+cff1*cff1)
+          bustr(i,j)=0.5_r8*(rdrag2(i-1,j)+rdrag2(i,j))*                &
+     &               u(i,j,1,nrhs)*cff2
+          cff3=cff*0.5_r8*(Hz(i-1,j,1)+Hz(i,j,1))
+          bustr(i,j)=SIGN(1.0_r8, bustr(i,j))*                          &
+     &               MIN(ABS(bustr(i,j)),                               &
+     &                   ABS(u(i,j,1,nrhs))*cff3)
         END DO
       END DO
       DO j=JstrV,Jend
         DO i=Istr,Iend
-          bvstr(i,j)=0.5_r8*(rdrag(i,j-1)+rdrag(i,j))*                  &
-     &               v(i,j,1,nrhs)
+          cff1=0.25_r8*(u(i  ,j  ,1,nrhs)+                              &
+     &                  u(i+1,j  ,1,nrhs)+                              &
+     &                  u(i  ,j-1,1,nrhs)+                              &
+     &                  u(i+1,j-1,1,nrhs))
+          cff2=SQRT(cff1*cff1+v(i,j,1,nrhs)*v(i,j,1,nrhs))
+          bvstr(i,j)=0.5_r8*(rdrag2(i,j-1)+rdrag2(i,j))*                &
+     &               v(i,j,1,nrhs)*cff2
+          cff3=cff*0.5_r8*(Hz(i,j-1,1)+Hz(i,j,1))
+          bvstr(i,j)=SIGN(1.0_r8, bvstr(i,j))*                          &
+     &               MIN(ABS(bvstr(i,j)),                               &
+     &                   ABS(v(i,j,1,nrhs))*cff3)
         END DO
       END DO
 !

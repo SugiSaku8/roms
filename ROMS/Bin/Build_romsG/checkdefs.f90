@@ -78,11 +78,6 @@
       is=LEN_TRIM(Coptions)+1
       Coptions(is:is+19)=' COLLECT_ALLGATHER,'
 !
-      IF (Master) WRITE (stdout,20) 'DJ_GRADPS',                        &
-     &   'Parabolic Splines density Jacobian (Shchepetkin, 2002)'
-      is=LEN_TRIM(Coptions)+1
-      Coptions(is:is+11)=' DJ_GRADPS,'
-!
       IF (Master) WRITE (stdout,20) 'DOUBLE_PRECISION',                 &
      &   'Double precision arithmetic numerical kernel'
       is=LEN_TRIM(Coptions)+1
@@ -92,16 +87,10 @@
       is=LEN_TRIM(Coptions)+1
       Coptions(is:is+18)=' !GATHER_SENDRECV,'
 !
-      IF (Master) WRITE (stdout,20) 'GLS_MIXING',                       &
-     &   'Generic Length-Scale turbulence closure'
+      IF (Master) WRITE (stdout,20) 'LIMIT_BSTRESS',                    &
+     &   'Limit bottom stress to maintain bottom velocity direction'
       is=LEN_TRIM(Coptions)+1
-      Coptions(is:is+12)=' GLS_MIXING,'
-      ivmix=ivmix+1
-!
-      IF (Master) WRITE (stdout,20) 'KANTHA_CLAYSON',                   &
-     &   'Kantha and Clayson stability function formulation'
-      is=LEN_TRIM(Coptions)+1
-      Coptions(is:is+16)=' KANTHA_CLAYSON,'
+      Coptions(is:is+15)=' LIMIT_BSTRESS,'
 !
       IF (Master) WRITE (stdout,20) 'MASKING',                          &
      &   'Land/Sea masking'
@@ -138,45 +127,35 @@
       is=LEN_TRIM(Coptions)+1
       Coptions(is:is+13)=' !NONLIN_EOS,'
 !
-      IF (Master) WRITE (stdout,20) 'N2S2_HORAVG',                      &
-     &   'Horizontal smoothing of buoyancy and shear'
-      is=LEN_TRIM(Coptions)+1
-      Coptions(is:is+13)=' N2S2_HORAVG,'
-!
       IF (Master) WRITE (stdout,20) 'POWER_LAW',                        &
      &   'Power-law shape time-averaging barotropic filter'
       is=LEN_TRIM(Coptions)+1
       Coptions(is:is+11)=' POWER_LAW,'
+!
+      IF (Master) WRITE (stdout,20) 'PRSGRD31',                         &
+     &   'Standard density Jacobian formulation (Song, 1998)'
+      is=LEN_TRIM(Coptions)+1
+      Coptions(is:is+10)=' PRSGRD31,'
 !
       IF (Master) WRITE (stdout,20) 'PROFILE',                          &
      &   'Time profiling activated'
       is=LEN_TRIM(Coptions)+1
       Coptions(is:is+9)=' PROFILE,'
 !
-      IF (Master) WRITE (stdout,20) 'K_GSCHEME',                        &
-     &   'Third-order upstream advection of TKE fields'
-      is=LEN_TRIM(Coptions)+1
-      Coptions(is:is+11)=' K_GSCHEME,'
-!
       IF (Master) WRITE (stdout,20) 'REDUCE_ALLREDUCE',                 &
      &   'Using mpi_allreduce in mp_reduce routine'
       is=LEN_TRIM(Coptions)+1
       Coptions(is:is+18)=' REDUCE_ALLREDUCE,'
 !
-      IF (Master) WRITE (stdout,20) 'RI_SPLINES',                       &
-     &   'Parabolic Spline Reconstruction for Richardson Number'
+      IF (Master) WRITE (stdout,20) 'RHO_SURF',                         &
+     &   'Include difference between rho0 and surface density'
       is=LEN_TRIM(Coptions)+1
-      Coptions(is:is+12)=' RI_SPLINES,'
+      Coptions(is:is+10)=' RHO_SURF,'
 !
       IF (Master) WRITE (stdout,20) '!RST_SINGLE',                      &
      &   'Double precision fields in restart NetCDF file'
       is=LEN_TRIM(Coptions)+1
       Coptions(is:is+13)=' !RST_SINGLE,'
-!
-      IF (Master) WRITE (stdout,20) 'SALINITY',                         &
-     &   'Using salinity'
-      is=LEN_TRIM(Coptions)+1
-      Coptions(is:is+10)=' SALINITY,'
       IF (Master) WRITE (stdout,20) '!SCATTER_BCAST',                   &
      &   'Using mpi_scatterv in mp_scatter2d/mp_scatter3d routines'
       is=LEN_TRIM(Coptions)+1
@@ -219,10 +198,10 @@
       Coptions(is:is+16)=' UV_C4VADVECTION,'
       ivelVadv=ivelVadv+1
 !
-      IF (Master) WRITE (stdout,20) 'UV_LDRAG',                         &
-     &   'Linear bottom stress'
+      IF (Master) WRITE (stdout,20) 'UV_QDRAG',                         &
+     &   'Quadratic bottom stress'
       is=LEN_TRIM(Coptions)+1
-      Coptions(is:is+10)=' UV_LDRAG,'
+      Coptions(is:is+10)=' UV_QDRAG,'
       ibbl=ibbl+1
 !
       IF (Master) WRITE (stdout,20) 'UV_VIS2',                          &

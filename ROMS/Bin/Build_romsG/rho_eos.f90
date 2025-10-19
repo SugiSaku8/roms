@@ -97,7 +97,6 @@
      &                   OCEAN(ng) % t,                                 &
      &                   COUPLING(ng) % rhoA,                           &
      &                   COUPLING(ng) % rhoS,                           &
-     &                   MIXING(ng) % bvf,                              &
      &                   OCEAN(ng) % pden,                              &
      &                   OCEAN(ng) % rho)
       CALL wclock_off (ng, model, 14, 102, MyFile)
@@ -114,7 +113,6 @@
      &                         Hz,                                      &
      &                         z_r, z_w, t,                             &
      &                         rhoA, rhoS,                              &
-     &                         bvf,                                     &
      &                         pden,                                    &
      &                         rho)
 !***********************************************************************
@@ -140,7 +138,6 @@
       real(r8), intent(in) :: t(LBi:,LBj:,:,:,:)
       real(r8), intent(out) :: rhoA(LBi:,LBj:)
       real(r8), intent(out) :: rhoS(LBi:,LBj:)
-      real(r8), intent(out) :: bvf(LBi:,LBj:,0:)
       real(r8), intent(out) :: pden(LBi:,LBj:,:)
       real(r8), intent(out) :: rho(LBi:,LBj:,:)
 !
@@ -222,8 +219,6 @@
           DO i=IstrT,IendT
             rho(i,j,k)=R0(ng)-                                          &
      &                 R0(ng)*Tcoef(ng)*(t(i,j,k,nrhs,itemp)-T0(ng))
-            rho(i,j,k)=rho(i,j,k)+                                      &
-     &                 R0(ng)*Scoef(ng)*(t(i,j,k,nrhs,isalt)-S0(ng))
             rho(i,j,k)=rho(i,j,k)-1000.0_r8
             rho(i,j,k)=rho(i,j,k)*rmask(i,j)
             pden(i,j,k)=rho(i,j,k)
@@ -253,18 +248,6 @@
           rhoA(i,j)=cff2*cff1*rhoA(i,j)
           rhoS(i,j)=2.0_r8*cff1*cff1*cff2*rhoS(i,j)
         END DO
-!
-!-----------------------------------------------------------------------
-!  Compute Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
-!  and vertical W-points.
-!-----------------------------------------------------------------------
-!
-        DO k=1,N(ng)-1
-          DO i=IstrT,IendT
-            bvf(i,j,k)=-gorho0*(rho(i,j,k+1)-rho(i,j,k))/               &
-     &                         (z_r(i,j,k+1)-z_r(i,j,k))
-          END DO
-        END DO
       END DO
 !
 !-----------------------------------------------------------------------
@@ -284,9 +267,6 @@
         CALL exchange_r2d_tile (ng, tile,                               &
      &                          LBi, UBi, LBj, UBj,                     &
      &                          rhoS)
-        CALL exchange_w3d_tile (ng, tile,                               &
-     &                          LBi, UBi, LBj, UBj, 0, N(ng),           &
-     &                          bvf)
       END IF
 !
       CALL mp_exchange3d (ng, tile, model, 2,                           &
@@ -299,11 +279,6 @@
      &                    NghostPoints,                                 &
      &                    EWperiodic(ng), NSperiodic(ng),               &
      &                    rhoA, rhoS)
-      CALL mp_exchange3d (ng, tile, model, 1,                           &
-     &                    LBi, UBi, LBj, UBj, 0, N(ng),                 &
-     &                    NghostPoints,                                 &
-     &                    EWperiodic(ng), NSperiodic(ng),               &
-     &                    bvf)
 !
       RETURN
       END SUBROUTINE rho_eos_tile

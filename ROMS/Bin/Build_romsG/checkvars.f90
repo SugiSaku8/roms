@@ -150,22 +150,6 @@
           have_var(idVvel)=.TRUE.
         ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idRv3d))) THEN
           have_var(idRv3d)=.TRUE.
-        ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idVvis))) THEN
-          have_var(idVvis)=.TRUE.
-        ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idTdif))) THEN
-          have_var(idTdif)=.TRUE.
-        ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idSdif))) THEN
-          have_var(idSdif)=.TRUE.
-        ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idMtke))) THEN
-          have_var(idMtke)=.TRUE.
-        ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idMtls))) THEN
-          have_var(idMtls)=.TRUE.
-        ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idVmLS))) THEN
-          have_var(idVmLS)=.TRUE.
-        ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idVmKK))) THEN
-          have_var(idVmKK)=.TRUE.
-        ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idVmKP))) THEN
-          have_var(idVmKP)=.TRUE.
         ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idFsur))) THEN
           have_var(idFsur)=.TRUE.
         ELSE IF (TRIM(var_name(i)).eq.TRIM(Vname(1,idRzet))) THEN
@@ -266,36 +250,6 @@
           RETURN
         END IF
       END DO
-      IF (.not.have_var(idMtke).and.get_var(idMtke)) THEN
-        IF (Master) WRITE (stdout,10) string, TRIM(Vname(1,idMtke)),    &
-     &                                TRIM(ncname)
-        exit_flag=2
-        RETURN
-      END IF
-      IF (.not.have_var(idMtls).and.get_var(idMtls)) THEN
-        IF (Master) WRITE (stdout,10) string, TRIM(Vname(1,idMtls)),    &
-     &                                TRIM(ncname)
-        exit_flag=2
-        RETURN
-      END IF
-      IF (.not.have_var(idVmLS).and.get_var(idVmLS)) THEN
-        IF (Master) WRITE (stdout,10) string, TRIM(Vname(1,idVmLS)),    &
-     &                                TRIM(ncname)
-        exit_flag=2
-        RETURN
-      END IF
-      IF (.not.have_var(idVmKK).and.get_var(idVmKK)) THEN
-        IF (Master) WRITE (stdout,10) string, TRIM(Vname(1,idVmKK)),    &
-     &                                TRIM(ncname)
-        exit_flag=2
-        RETURN
-      END IF
-      IF (.not.have_var(idVmKP).and.get_var(idVmKP)) THEN
-        IF (Master) WRITE (stdout,10) string, TRIM(Vname(1,idVmKP)),    &
-     &                                TRIM(ncname)
-        exit_flag=2
-        RETURN
-      END IF
 !
   10  FORMAT (/,a,'CHECKVARS_NF90 - unable to find model variable: ',a, &
      &        /,23x,'in file: ',a)

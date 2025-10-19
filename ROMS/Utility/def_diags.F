@@ -442,6 +442,27 @@
 !!      Prefix='time-averaged'
         Prefix=CHAR(32)                                   ! blank space
 !
+!  Force-enable a subset of diagnostics to guarantee definition
+!  of tracer and UV diagnostic variables when creating the file.
+!
+# ifdef DIAGNOSTICS_TS
+        Dout(idDtrc(1,iTrate),ng)=.TRUE.
+        Dout(idDtrc(1,iThdif),ng)=.TRUE.
+        Dout(idDtrc(1,iTvdif),ng)=.TRUE.
+        Dout(idDtrc(1,iTvadv),ng)=.TRUE.
+        Dout(idDtrc(1,iThadv),ng)=.TRUE.
+        Dout(idDtrc(1,iTxadv),ng)=.TRUE.
+        Dout(idDtrc(1,iTyadv),ng)=.TRUE.
+# endif
+# ifdef DIAGNOSTICS_UV
+        Dout(idDu2d(M2rate),ng)=.TRUE.
+        Dout(idDv2d(M2rate),ng)=.TRUE.
+#  if defined UV_VIS2 || defined UV_VIS4
+        Dout(idDu2d(M2hvis),ng)=.TRUE.
+        Dout(idDv2d(M2hvis),ng)=.TRUE.
+#  endif
+# endif
+!
 !-----------------------------------------------------------------------
 !  Define time-recordless information variables.
 !-----------------------------------------------------------------------

@@ -87,12 +87,6 @@
           real(r8), pointer :: diff2(:,:,:)
           real(r8), pointer :: Akv(:,:,:)
           real(r8), pointer :: Akt(:,:,:,:)
-          real(r8), pointer :: bvf(:,:,:)
-          real(r8), pointer :: tke(:,:,:,:)
-          real(r8), pointer :: gls(:,:,:,:)
-          real(r8), pointer :: Lscale(:,:,:)
-          real(r8), pointer :: Akk(:,:,:)
-          real(r8), pointer :: Akp(:,:,:)
         END TYPE T_MIXING
 !
         TYPE (T_MIXING), allocatable :: MIXING(:)
@@ -149,18 +143,6 @@
       Dmem(ng)=Dmem(ng)+REAL(N(ng)+1,r8)*size2d
       allocate ( MIXING(ng) % Akt(LBi:UBi,LBj:UBj,0:N(ng),NAT) )
       Dmem(ng)=Dmem(ng)+REAL((N(ng)+1)*NAT,r8)*size2d
-      allocate ( MIXING(ng) % bvf(LBi:UBi,LBj:UBj,0:N(ng)) )
-      Dmem(ng)=Dmem(ng)+REAL(N(ng)+1,r8)*size2d
-      allocate ( MIXING(ng) % tke(LBi:UBi,LBj:UBj,0:N(ng),3) )
-      Dmem(ng)=Dmem(ng)+3.0_r8*REAL(N(ng)+1,r8)*size2d
-      allocate ( MIXING(ng) % gls(LBi:UBi,LBj:UBj,0:N(ng),3) )
-      Dmem(ng)=Dmem(ng)+3.0_r8*REAL(N(ng)+1,r8)*size2d
-      allocate ( MIXING(ng) % Lscale(LBi:UBi,LBj:UBj,0:N(ng)) )
-      Dmem(ng)=Dmem(ng)+REAL(N(ng)+1,r8)*size2d
-      allocate ( MIXING(ng) % Akk(LBi:UBi,LBj:UBj,0:N(ng)) )
-      Dmem(ng)=Dmem(ng)+REAL(N(ng)+1,r8)*size2d
-      allocate ( MIXING(ng) % Akp(LBi:UBi,LBj:UBj,0:N(ng)) )
-      Dmem(ng)=Dmem(ng)+REAL(N(ng)+1,r8)*size2d
 !
       RETURN
       END SUBROUTINE allocate_mixing
@@ -332,34 +314,6 @@
               DO i=Imin,Imax
                 MIXING(ng) % Akt(i,j,k,itrc) = Akt_bak(itrc,ng)
               END DO
-            END DO
-          END DO
-          DO k=0,N(ng)
-            DO i=Imin,Imax
-              MIXING(ng) % bvf(i,j,k) = IniVal
-            END DO
-          END DO
-          DO k=0,N(ng)
-            DO i=Imin,Imax
-              MIXING(ng) % tke(i,j,k,1) = gls_Kmin(ng)
-              MIXING(ng) % tke(i,j,k,2) = gls_Kmin(ng)
-              MIXING(ng) % tke(i,j,k,3) = gls_Kmin(ng)
-              MIXING(ng) % gls(i,j,k,1) = gls_Pmin(ng)
-              MIXING(ng) % gls(i,j,k,2) = gls_Pmin(ng)
-              MIXING(ng) % gls(i,j,k,3) = gls_Pmin(ng)
-              MIXING(ng) % Lscale(i,j,k) = IniVal
-            END DO
-          END DO
-          DO i=Imin,Imax
-            MIXING(ng) % Akk(i,j,0) = IniVal
-            MIXING(ng) % Akk(i,j,N(ng)) = IniVal
-            MIXING(ng) % Akp(i,j,0) = IniVal
-            MIXING(ng) % Akp(i,j,N(ng)) = IniVal
-          END DO
-          DO k=1,N(ng)-1
-            DO i=Imin,Imax
-              MIXING(ng) % Akk(i,j,k) = Akk_bak(ng)
-              MIXING(ng) % Akp(i,j,k) = Akp_bak(ng)
             END DO
           END DO
         END DO

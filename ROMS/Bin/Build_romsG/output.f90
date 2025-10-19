@@ -22,12 +22,14 @@
 !
       USE close_io_mod,    ONLY : close_file
       USE def_avg_mod,     ONLY : def_avg
+      USE def_diags_mod,   ONLY : def_diags
       USE def_his_mod,     ONLY : def_his
       USE def_quick_mod,   ONLY : def_quick
       USE def_rst_mod,     ONLY : def_rst
       USE distribute_mod,  ONLY : mp_bcasts
       USE strings_mod,     ONLY : FoundError
       USE wrt_avg_mod,     ONLY : wrt_avg
+      USE wrt_diags_mod,   ONLY : wrt_diags
       USE wrt_his_mod,     ONLY : wrt_his
       USE wrt_quick_mod,   ONLY : wrt_quick
       USE wrt_rst_mod,     ONLY : wrt_rst
@@ -351,6 +353,96 @@
      &      ((iic(ng).ge.ntsAVG(ng)).and.(nAVG(ng).eq.1))) THEN
           CALL wrt_avg (ng, tile)
           IF (FoundError(exit_flag, NoError, 520, MyFile)) RETURN
+        END IF
+      END IF
+!
+!-----------------------------------------------------------------------
+!  If appropriate, process time-averaged diagnostics NetCDF file.
+!-----------------------------------------------------------------------
+!
+!  Create output time-averaged diagnostics NetCDF file or prepare
+!  existing file to append new data to it. Also, notice that it is
+!  possible to create several files during a single model run.
+!
+      IF (LdefDIA(ng)) THEN
+        IF (ndefDIA(ng).gt.0) THEN
+          IF (idefDIA(ng).lt.0) THEN
+            idefDIA(ng)=((ntstart(ng)-1)/ndefDIA(ng))*ndefDIA(ng)
+            IF ((ndefDIA(ng).eq.nDIA(ng)).and.(idefDIA(ng).le.0)) THEN
+              idefDIA(ng)=ndefDIA(ng)         ! one file per record
+            ELSE IF (idefDIA(ng).lt.iic(ng)-1) THEN
+              idefDIA(ng)=idefDIA(ng)+ndefDIA(ng)
+            END IF
+          END IF
+          IF ((nrrec(ng).ne.0).and.(iic(ng).eq.ntstart(ng))) THEN
+            IF ((iic(ng)-1).eq.idefDIA(ng)) THEN
+              DIA(ng)%load=0                  ! restart, reset counter
+              Ldefine=.FALSE.                 ! finished file, delay
+            ELSE                              ! creation of next file
+              NewFile=.FALSE.
+              Ldefine=.TRUE.                  ! unfinished file, inquire
+            END IF                            ! content for appending
+            idefDIA(ng)=idefDIA(ng)+nDIA(ng)  ! restart offset
+          ELSE IF ((iic(ng)-1).eq.idefDIA(ng)) THEN
+            idefDIA(ng)=idefDIA(ng)+ndefDIA(ng)
+            IF (nDIA(ng).ne.ndefDIA(ng).and.iic(ng).eq.ntstart(ng)) THEN
+              idefDIA(ng)=idefDIA(ng)+nDIA(ng)
+            END IF
+            Ldefine=.TRUE.
+            Newfile=.TRUE.
+          ELSE
+            Ldefine=.FALSE.
+          END IF
+          IF (Ldefine) THEN
+            IF (iic(ng).eq.ntstart(ng)) THEN
+              DIA(ng)%load=0                  ! reset filename counter
+            END IF
+            IF (ndefDIA(ng).eq.nDIA(ng)) THEN ! next filename suffix
+              ifile=(iic(ng)-1)/ndefDIA(ng)
+            ELSE
+              ifile=(iic(ng)-1)/ndefDIA(ng)+1
+            END IF
+            DIA(ng)%load=DIA(ng)%load+1
+            IF (DIA(ng)%load.gt.DIA(ng)%Nfiles) THEN
+              IF (Master) THEN
+                WRITE (stdout,10) 'DIA(ng)%load = ', DIA(ng)%load,      &
+     &                             DIA(ng)%Nfiles, TRIM(DIA(ng)%base),  &
+     &                             ifile
+              END IF
+              exit_flag=4
+              IF (FoundError(exit_flag, NoError,                        &
+     &                       586, MyFile)) RETURN
+            END IF
+            Fcount=DIA(ng)%load
+            DIA(ng)%Nrec(Fcount)=0
+            IF (Master) THEN
+              WRITE (DIA(ng)%name,20) TRIM(DIA(ng)%base), ifile
+            END IF
+            CALL mp_bcasts (ng, iNLM, DIA(ng)%name)
+            DIA(ng)%files(Fcount)=TRIM(DIA(ng)%name)
+            CALL close_file (ng, iNLM, DIA(ng), DIA(ng)%name, Lupdate)
+            CALL def_diags (ng, Newfile)
+            IF (FoundError(exit_flag, NoError, 599, MyFile)) RETURN
+            LwrtDIA(ng)=.TRUE.
+          END IF
+        ELSE
+          IF (iic(ng).eq.ntstart(ng)) THEN
+            CALL def_diags (ng, ldefout(ng))
+            IF (FoundError(exit_flag, NoError, 605, MyFile)) RETURN
+            LwrtDIA(ng)=.TRUE.
+            LdefDIA(ng)=.FALSE.
+          END IF
+        END IF
+      END IF
+!
+!  Write out data into time-averaged diagnostics NetCDF file.
+!
+      IF (LwrtDIA(ng)) THEN
+        IF (((iic(ng).gt.ntstart(ng)).and.                              &
+     &       (MOD(iic(ng)-1,nDIA(ng)).eq.0)).or.                        &
+     &      ((iic(ng).ge.ntsDIA(ng)).and.(nDIA(ng).eq.1))) THEN
+          CALL wrt_diags (ng, tile)
+          IF (FoundError(exit_flag, NoError, 619, MyFile)) RETURN
         END IF
       END IF
 !

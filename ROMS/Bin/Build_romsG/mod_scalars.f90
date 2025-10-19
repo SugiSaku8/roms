@@ -103,6 +103,11 @@
         integer :: isalt              ! Salinity
 !
 !-----------------------------------------------------------------------
+!  Diagnostic fields identification indices.
+!-----------------------------------------------------------------------
+!
+!
+!-----------------------------------------------------------------------
 !  Time stepping indices, variables, and clocks.
 !-----------------------------------------------------------------------
 !
@@ -1090,10 +1095,6 @@
         real(r8), allocatable :: gls_c3p(:)
         real(r8), allocatable :: gls_Kmin(:)
         real(r8), allocatable :: gls_Pmin(:)
-        real(r8), parameter :: gls_Gh0 = 0.028_r8
-        real(r8), parameter :: gls_Ghcri = 0.02_r8
-        real(r8), parameter :: gls_Ghmin = -0.28_r8
-        real(r8), parameter :: gls_E2 = 1.33_r8
 !
 ! Constants used in the various formulation of surface flux boundary
 ! conditions for the GLS vertical turbulence closure in terms of
@@ -1112,58 +1113,6 @@
 !   [1.0] All wave dissipation goes to roller and none to breaking
 !
         real(r8), allocatable :: wec_alpha(:)
-!
-!-----------------------------------------------------------------------
-!  Mellor-Yamada (1982) Level 2.5 vertical mixing variables.
-!-----------------------------------------------------------------------
-!
-!    my_A1         Turbulent closure A1 constant.
-!    my_A2         Turbulent closure A2 constant.
-!    my_B1         Turbulent closure B1 constant.
-!    my_B1p2o3     B1**(2/3).
-!    my_B1pm1o3    B1**(-1/3).
-!    my_B2         Turbulent closure B2 constant.
-!    my_C1         Turbulent closure C1 constant.
-!    my_C2         Turbulent closure C2 constant.
-!    my_C3         Turbulent closure C3 constant.
-!    my_E1         Turbulent closure E1 constant.
-!    my_E1o2       0.5*E1
-!    my_E2         Turbulent closure E2 constant.
-!    my_Gh0        Lower bound on Galperin et al. stability function.
-!    my_Sh1        Tracers stability function constant factor.
-!    my_Sh2        Tracers stability function constant factor.
-!    my_Sm1        Momentum stability function constant factor.
-!    my_Sm2        Momentum stability function constant factor.
-!    my_Sm3        Momentum stability function constant factor.
-!    my_Sm4        Momentum stability function constant factor.
-!    my_Sq         Scale for vertical mixing of turbulent energy.
-!    my_dtfac      Asselin time filter coefficient.
-!    my_lmax       Upper bound on the turbulent length scale.
-!    my_qmin       Lower bound on turbulent energy "tke" and "gls".
-!
-        real(r8), parameter :: my_A1 = 0.92_r8
-        real(r8), parameter :: my_A2 = 0.74_r8
-        real(r8), parameter :: my_B1 = 16.6_r8
-        real(r8), parameter :: my_B2 = 10.1_r8
-        real(r8), parameter :: my_C1 = 0.08_r8
-        real(r8), parameter :: my_C2 = 0.7_r8
-        real(r8), parameter :: my_C3 = 0.2_r8
-        real(r8), parameter :: my_E1 = 1.8_r8
-        real(r8), parameter :: my_E2 = 1.33_r8
-        real(r8), parameter :: my_Gh0 = 0.0233_r8
-        real(r8), parameter :: my_Sq = 0.2_r8
-        real(r8), parameter :: my_dtfac = 0.05_r8
-        real(r8), parameter :: my_lmax = 0.53_r8
-        real(r8), parameter :: my_qmin = 1.0E-8_r8
-        real(r8) :: my_B1p2o3
-        real(r8) :: my_B1pm1o3
-        real(r8) :: my_E1o2
-        real(r8) :: my_Sh1
-        real(r8) :: my_Sh2
-        real(r8) :: my_Sm1
-        real(r8) :: my_Sm2
-        real(r8) :: my_Sm3
-        real(r8) :: my_Sm4
 !
 !-----------------------------------------------------------------------
 !  Tangent linear and adjoint model parameters.
@@ -2628,6 +2577,10 @@
       isalt=2
       ic=NAT
 !
+!---------------------------------------------------------------------
+!  Set diagnostic fields identification indices.
+!---------------------------------------------------------------------
+!
 !-----------------------------------------------------------------------
 !  Activate all computation control switches.
 !-----------------------------------------------------------------------
@@ -2818,20 +2771,6 @@
         INItime(ng)=-1.0_dp
         INItimeS(ng)=-1.0_dp
       END DO
-!
-!  Coefficients used to compute stability functions for tracer and
-!  momentum.
-!
-      my_B1p2o3=my_B1**(2.0_r8/3.0_r8)
-      my_B1pm1o3=1.0_r8/(my_B1**(1.0_r8/3.0_r8))
-      my_E1o2=0.5_r8*my_E1
-      my_Sm1=my_A1*my_A2*((my_B2-3.0_r8*my_A2)*                         &
-     &                    (1.0_r8-6.0_r8*my_A1/my_B1)-                  &
-     &                    3.0_r8*my_C1*(my_B2+6.0_r8*my_A1))
-      my_Sm2=9.0_r8*my_A1*my_A2
-      my_Sh1=my_A2*(1.0_r8-6.0_r8*my_A1/my_B1)
-      my_Sh2=3.0_r8*my_A2*(6.0_r8*my_A1+my_B2*(1.0_r8-my_C3))
-      my_Sm4=18.0_r8*my_A1*my_A1+9.0_r8*my_A1*my_A2*(1.0_r8-my_C2)
       RETURN
       END SUBROUTINE initialize_scalars
 !

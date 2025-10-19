@@ -141,6 +141,18 @@
      &                      ndefAVG(ng), (/0/), (/0/),                  &
      &                      ncid = ncid)
       IF (FoundError(exit_flag, NoError, 251, MyFile)) RETURN
+      CALL netcdf_put_ivar (ng, model, ncname, 'ntsDIA',                &
+     &                      ntsDIA(ng), (/0/), (/0/),                   &
+     &                      ncid = ncid)
+      IF (FoundError(exit_flag, NoError, 333, MyFile)) RETURN
+      CALL netcdf_put_ivar (ng, model, ncname, 'nDIA',                  &
+     &                      nDIA(ng), (/0/), (/0/),                     &
+     &                      ncid = ncid)
+      IF (FoundError(exit_flag, NoError, 338, MyFile)) RETURN
+      CALL netcdf_put_ivar (ng, model, ncname, 'ndefDIA',               &
+     &                      ndefDIA(ng), (/0/), (/0/),                  &
+     &                      ncid = ncid)
+      IF (FoundError(exit_flag, NoError, 343, MyFile)) RETURN
 !
 !  Power-law shape filter parameters for time-averaging of barotropic
 !  fields.
@@ -187,14 +199,6 @@
      &                      Akv_bak(ng), (/0/), (/0/),                  &
      &                      ncid = ncid)
       IF (FoundError(exit_flag, NoError, 524, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'Akk_bak',               &
-     &                      Akk_bak(ng), (/0/), (/0/),                  &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 530, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'Akp_bak',               &
-     &                      Akp_bak(ng), (/0/), (/0/),                  &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 535, MyFile)) RETURN
 !
 !  Drag coefficients.
 !
@@ -214,73 +218,6 @@
      &                      Zos(ng), (/0/), (/0/),                      &
      &                      ncid = ncid)
       IF (FoundError(exit_flag, NoError, 593, MyFile)) RETURN
-!
-!  Generic length-scale parameters.
-!
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_p',                 &
-     &                      gls_p(ng), (/0/), (/0/),                    &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 603, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_m',                 &
-     &                      gls_m(ng), (/0/), (/0/),                    &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 608, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_n',                 &
-     &                      gls_n(ng), (/0/), (/0/),                    &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 613, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_cmu0',              &
-     &                      gls_cmu0(ng), (/0/), (/0/),                 &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 618, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_c1',                &
-     &                      gls_c1(ng), (/0/), (/0/),                   &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 623, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_c2',                &
-     &                      gls_c2(ng), (/0/), (/0/),                   &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 628, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_c3m',               &
-     &                      gls_c3m(ng), (/0/), (/0/),                  &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 633, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_c3p',               &
-     &                      gls_c3p(ng), (/0/), (/0/),                  &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 638, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_sigk',              &
-     &                      gls_sigk(ng), (/0/), (/0/),                 &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 643, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_sigp',              &
-     &                      gls_sigp(ng), (/0/), (/0/),                 &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 648, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_Kmin',              &
-     &                      gls_Kmin(ng), (/0/), (/0/),                 &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 653, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'gls_Pmin',              &
-     &                      gls_Pmin(ng), (/0/), (/0/),                 &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 658, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'Charnok_alpha',         &
-     &                      charnok_alpha(ng), (/0/), (/0/),            &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 663, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'Zos_hsig_alpha',        &
-     &                      zos_hsig_alpha(ng), (/0/), (/0/),           &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 668, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'sz_alpha',              &
-     &                      sz_alpha(ng), (/0/), (/0/),                 &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 673, MyFile)) RETURN
-      CALL netcdf_put_fvar (ng, model, ncname, 'CrgBan_cw',             &
-     &                      crgban_cw(ng), (/0/), (/0/),                &
-     &                      ncid = ncid)
-      IF (FoundError(exit_flag, NoError, 678, MyFile)) RETURN
 !
 !  Nudging inverse time scales used in various tasks.
 !
