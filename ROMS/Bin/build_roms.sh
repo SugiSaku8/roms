@@ -170,10 +170,10 @@ export   ROMS_APPLICATION=KAARME
 if [ -n "${ROMS_ROOT_DIR:+1}" ]; then
   export      MY_ROOT_DIR=${ROMS_ROOT_DIR}
 else
-  export      MY_ROOT_DIR=${HOME}/ocean/repository/git
+  export      MY_ROOT_DIR=${PWD}/../../../../..
 fi
 
-#export     MY_PROJECT_DIR=${PWD}
+export     MY_PROJECT_DIR=${PWD}/../../../../../..
 
 # The path to the user's local current ROMS source code.
 #
@@ -185,7 +185,7 @@ fi
 # This script allows for differing paths to the code and inputs on other
 # computers.
 
- #export       MY_ROMS_SRC=${MY_ROOT_DIR}/roms
+ export       MY_ROMS_SRC=${MY_ROOT_DIR}/ROMS
 
 # Set path of the directory containing makefile configuration (*.mk) files.
 # The user has the option to specify a customized version of these files
