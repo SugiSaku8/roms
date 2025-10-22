@@ -300,7 +300,7 @@ switch ($FORT)
 
 # GNU Compiler:
 
-  case "gfortran"
+    case "gfortran"
     setenv ESMF_COMPILER        gfortran
     if ($?USE_DEBUG) then
       setenv ESMF_BOPT          g
@@ -311,44 +311,44 @@ switch ($FORT)
     setenv ESMF_COMM            ${which_MPI}
     setenv ESMF_SITE            default
 
-    setenv ARPACK_LIBDIR        /opt/gfortransoft/serial/ARPACK
+    setenv ARPACK_LIBDIR        /opt/homebrew/lib
     if ($?USE_MPI) then
       if ($which_MPI == "mpich2" ) then
-        setenv MPI_SOFT         /opt/gfortransoft/mpich2
+        setenv MPI_SOFT         /opt/homebrew
       else if ($which_MPI == "openmpi" ) then
-        setenv MPI_SOFT         /opt/gfortransoft/openmpi
+        setenv MPI_SOFT         /opt/homebrew
       else if ($which_MPI == "mvapich2" ) then
-        setenv MPI_SOFT         /opt/gfortransoft/mvapich2
+        setenv MPI_SOFT         /opt/homebrew
       endif
-      setenv MCT_INCDIR         ${MPI_SOFT}/mct/include
-      setenv MCT_LIBDIR         ${MPI_SOFT}/mct/lib
-      setenv PARPACK_LIBDIR     ${MPI_SOFT}/PARPACK
+      setenv MCT_INCDIR         ${MPI_SOFT}/include
+      setenv MCT_LIBDIR         ${MPI_SOFT}/lib
+      setenv PARPACK_LIBDIR     ${MPI_SOFT}/lib
     endif
 
     if (! $?SINGULARITY_COMMAND) then
       if ($?USE_NETCDF4) then
         if ($?USE_PARALLEL_IO && $?USE_MPI) then
-          setenv ESMF_DIR       ${MPI_SOFT}/esmf_nc4
-          setenv NETCDF         ${MPI_SOFT}/netcdf4
-          setenv NETCDFC        ${MPI_SOFT}/netcdf4c
-          setenv NC_CONFIG      ${NETCDFC}/bin/nc-config
-          setenv NF_CONFIG      ${NETCDF}/bin/nf-config
-          setenv NETCDF_INCDIR  ${NETCDF}/include
+          setenv ESMF_DIR       ${MPI_SOFT}/share/esmf
+          setenv NETCDF         /opt/homebrew
+          setenv NETCDFC        /opt/homebrew
+          setenv NC_CONFIG      /opt/homebrew/bin/nc-config
+          setenv NF_CONFIG      /opt/homebrew/bin/nf-config
+          setenv NETCDF_INCDIR  /opt/homebrew/include
           setenv NETCDF4        1
         else
-          setenv ESMF_DIR       ${MPI_SOFT}/esmf_nc4
-          setenv NETCDF         /opt/gfortransoft/serial/netcdf4
-          setenv NETCDFC        ${MPI_SOFT}/netcdf4c
-          setenv NC_CONFIG      ${NETCDFC}/bin/nc-config
-          setenv NF_CONFIG      ${NETCDF}/bin/nf-config
-          setenv NETCDF_INCDIR  ${NETCDF}/include
+          setenv ESMF_DIR       ${MPI_SOFT}/share/esmf
+          setenv NETCDF         /opt/homebrew
+          setenv NETCDFC        /opt/homebrew
+          setenv NC_CONFIG      /opt/homebrew/bin/nc-config
+          setenv NF_CONFIG      /opt/homebrew/bin/nf-config
+          setenv NETCDF_INCDIR  /opt/homebrew/include
           setenv NETCDF4        1
         endif
       else
-        setenv ESMF_DIR           ${MPI_SOFT}/esmf_nc3
-        setenv NETCDF             /opt/gfortransoft/serial/netcdf3
-        setenv NETCDF_INCDIR      ${NETCDF}/include
-        setenv NETCDF_LIBDIR      ${NETCDF}/lib
+        setenv ESMF_DIR           ${MPI_SOFT}/share/esmf
+        setenv NETCDF             /opt/homebrew
+        setenv NETCDF_INCDIR      /opt/homebrew/include
+        setenv NETCDF_LIBDIR      /opt/homebrew/lib
         setenv NETCDF_classic     1
       endif
     endif
@@ -364,13 +364,13 @@ switch ($FORT)
 
     if ($?USE_HDF5) then
       if ($?USE_PARALLEL_IO && $?USE_MPI) then
-        setenv HDF5             ${MPI_SOFT}/hdf5
-        setenv HDF5_LIBDIR      ${HDF5}/lib
-        setenv HDF5_INCDIR      ${HDF5}/include
+        setenv HDF5             /opt/homebrew
+        setenv HDF5_LIBDIR      /opt/homebrew/lib
+        setenv HDF5_INCDIR      /opt/homebrew/include
       else
-        setenv HDF5             /opt/gfortransoft/serial/hdf5
-        setenv HDF5_LIBDIR      ${HDF5}/lib
-        setenv HDF5_INCDIR      ${HDF5}/include
+        setenv HDF5             /opt/homebrew
+        setenv HDF5_LIBDIR      /opt/homebrew/lib
+        setenv HDF5_INCDIR      /opt/homebrew/include
       endif
     endif
 
