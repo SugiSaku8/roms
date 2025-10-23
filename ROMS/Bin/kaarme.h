@@ -27,7 +27,10 @@
 #undef  VAR_RHO_2D
 #define DIAGNOSTICS_TS
 #define DIAGNOSTICS_UV
-
+#define MB_BBL
+#define SG_BBL
+#define UV_QDRAG
+#define BBL_MODEL
 #define MASKING
 #undef  SALINITY
 
